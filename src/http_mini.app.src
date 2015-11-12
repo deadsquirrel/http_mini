@@ -1,0 +1,17 @@
+{application, gs_config,
+  [{description,  "my httpd application"},
+   {id,           "identifier httpd"},
+   {vsn,          "0.0.1"},
+   {modules,      [
+                   gs_config,
+                   http_mini_app,
+                   http_mini_sup
+                  ]},
+   {registered,   [http_mini_name]},
+   {included_applications, []},
+   {applications, []},
+   {env,          []},
+   {mod,          {http_mini_app, []}}
+  ]}.
+
+
