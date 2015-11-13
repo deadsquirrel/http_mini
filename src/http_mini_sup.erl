@@ -89,8 +89,9 @@ init([]) ->
     AChild_content = {gs_content_name, {gs_content, start_link, []},
                       Restart, Shutdown, Type, [gs_content]},
     
-    AChild_tcp_serv = {tcp_serv_name, {mini_http_tcp_serv, start_link, []},
-                      Restart, Shutdown, Type, [mini_http_tcp_serv]},
+    AChild_tcp_serv = {http_mini_tcp_serv_name, 
+                       {http_mini_tcp_serv, start_link, []},
+                       Restart, Shutdown, Type, [mini_http_tcp_serv]},
     
     {ok, {SupFlags, [AChild_conf, AChild_content, AChild_tcp_serv]}}.
 
