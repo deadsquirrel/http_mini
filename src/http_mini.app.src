@@ -1,9 +1,10 @@
-{application, gs_config,
+{application, http_mini,
   [{description,  "my httpd application"},
    {id,           "identifier httpd"},
    {vsn,          "0.0.1"},
    {modules,      [
                    gs_config,
+                   gs_content,
                    http_mini_app,
                    http_mini_sup
                   ]},

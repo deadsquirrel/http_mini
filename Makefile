@@ -18,11 +18,10 @@ ebin:
 
 $(PACKAGE): src/gs_config.erl src/$(PACKAGE)_app.erl src/$(PACKAGE)_sup.erl
 #	erlc -o ebin src/$(PACKAGE).erl
-#	erlc -o ebin src/$(PACKAGE).erl
-	erlc -o ebin src/gs_config.erl
 	erlc -o ebin src/$(PACKAGE)_app.erl
 	erlc -o ebin src/$(PACKAGE)_sup.erl
-
+	erlc -o ebin src/gs_config.erl
+	erlc -o ebin src/gs_content.erl
 shell: all
 	erl -pa ebin -config $(PACKAGE).config -eval
 "application:ensure_all_started()."

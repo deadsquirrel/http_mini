@@ -31,7 +31,27 @@
 %%--------------------------------------------------------------------
 start_link() ->
     io:format("http_mini_sup start_link/0, pid ~p~n", [self()]),
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+    supervisor:start_link({global, ?SERVER}, ?MODULE, []).
+
+
+%% start_link(SupName, Module, Args) -> Result 
+%% SupName = {local, Name} | {global, Name}
+
+%% aName = atom()
+%% Module = atom()
+%% Args = term()
+%% Result = {ok, Pid} | ignore | {error, Error}
+%% аPid = pid()
+%% аError = {already_started, Pid}} | shutdown | term() 
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Starts the child
+%%
+%% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
+%% @end
+%%--------------------------------------------------------------------
+
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -63,15 +83,13 @@ init([]) ->
     Type = worker,
 %% !! начинаем работать отсюда
 
-    AChild_conf = {gs_config_name, {gs_config, start_link, []},
-              Restart, Shutdown, Type, [gs_config]},
+     AChild_conf = {gs_config_name, {gs_config, start_link, []},
+               Restart, Shutdown, Type, [gs_config]},
 
-    {ok, {SupFlags, [AChild_conf]}}.
-
-    %% AChild_content = {gs_content_name, {gs_content, start_link, []},
-    %%           Restart, Shutdown, Type, [gs_content]},
-
-    %% {ok, {SupFlags, [AChild_content]}}.
+     AChild_content = {gs_content_name, {gs_content, start_link, []},
+                Restart, Shutdown, Type, [gs_content]},
+    
+     {ok, {SupFlags, [AChild_conf, AChild_content]}}.
 
 
 %%%===================================================================

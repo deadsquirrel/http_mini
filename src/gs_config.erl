@@ -45,8 +45,8 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-    io:format("gs_config gen_server start_link (pid ~p)~n", [self()]),
-    gen_server:start_link({global, ?SERVER}, ?MODULE, [], []).
+    io:format("gs_config gen_server start_link_config (pid ~p)~n", [self()]),
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
 %% @doc just a demo of a API call
@@ -72,7 +72,7 @@ get_state() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    io:format("http_mini gen_server init fun (pid ~p)~n", [self()]),
+    io:format("http_mini_config gen_server init fun (pid ~p)~n", [self()]),
     TS = erlang:localtime(),
     {ok, #state{time_started = TS}}.
 

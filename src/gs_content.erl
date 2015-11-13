@@ -6,18 +6,19 @@
 %%% @end
 %%% Created :  9 Nov 2015 by Yana P. Ribalchenko <yanki@hole.lake>
 %%%-------------------------------------------------------------------
--module(gs_config).
+-module(gs_content).
 
 -behaviour(gen_server).
 
 -define(VERSION, 0.01).
 -define (TIMEOUT, 5000).
--define (PORT, 7).
+-define (PORT, 8080).
 
 %% API
 -export([
          start_link/0,
-         get_state/0
+         get_state/0,
+         set_operand_one/1
         ]).
 
 %% gen_server callbacks
@@ -29,7 +30,8 @@
 -record(state,
         {
           time_started :: calendar:datetime(),
-          req_processed = 0 :: integer()
+          req_processed = 0 :: integer(),
+          operand_one :: integer ()
         }).
 
 %%%===================================================================
@@ -45,7 +47,7 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-    io:format("skeleton gen_server start_link (pid ~p)~n", [self()]),
+    io:format("gs_content gen_server start_link_content (pid ~p)~n", [self()]),
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
@@ -54,7 +56,14 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec get_state() -> #state{}.
 get_state() ->
+    io:format("get_state/0, pid: ~p~n", [self()]),
     gen_server:call(?SERVER, get_me_state).
+
+
+-spec set_operand_one(A :: integer()) -> ok.
+set_operand_one(A) ->
+    io:format("set_operand_one/1, pid: ~p, ~p~n", [self(), A]),
+    gen_server:call(?SERVER, {opA, A}).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -72,7 +81,7 @@ get_state() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    io:format("skeleton gen_server init fun (pid ~p)~n", [self()]),
+    io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
     TS = erlang:localtime(),
     {ok, #state{time_started = TS}}.
 
@@ -93,6 +102,12 @@ init([]) ->
 handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
+
+handle_call({opA, SetA}, _From, State) ->
+    io:format("handle_call/3 (set A), pid: ~p~n", [self()]),
+    {reply, ok_A, State#state{operand_one = SetA}};
+
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
