@@ -31,7 +31,7 @@
 %%--------------------------------------------------------------------
 start_link() ->
     io:format("http_mini_sup start_link/0, pid ~p~n", [self()]),
-    supervisor:start_link({global, ?SERVER}, ?MODULE, []).
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 
 %% start_link(SupName, Module, Args) -> Result 
@@ -75,21 +75,24 @@ init([]) ->
     RestartStrategy = one_for_one,
     MaxRestarts = 1000,
     MaxSecondsBetweenRestarts = 3600,
-
+    
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
-
+    
     Restart = permanent,
     Shutdown = 2000,
     Type = worker,
-%% !! начинаем работать отсюда
-
-     AChild_conf = {gs_config_name, {gs_config, start_link, []},
-               Restart, Shutdown, Type, [gs_config]},
-
-     AChild_content = {gs_content_name, {gs_content, start_link, []},
-                Restart, Shutdown, Type, [gs_content]},
+    %% !! начинаем работать отсюда
     
-     {ok, {SupFlags, [AChild_conf, AChild_content]}}.
+    AChild_conf = {gs_config_name, {gs_config, start_link, []},
+                   Restart, Shutdown, Type, [gs_config]},
+    
+    AChild_content = {gs_content_name, {gs_content, start_link, []},
+                      Restart, Shutdown, Type, [gs_content]},
+    
+    AChild_tcp_serv = {tcp_serv_name, {mini_http_tcp_serv, start_link, []},
+                      Restart, Shutdown, Type, [mini_http_tcp_serv]},
+    
+    {ok, {SupFlags, [AChild_conf, AChild_content, AChild_tcp_serv]}}.
 
 
 %%%===================================================================
