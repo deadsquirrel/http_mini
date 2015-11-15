@@ -10,7 +10,8 @@
 -module(http_mini_tcp_serv).
 
 %% API
--export ([server/0,  start_link/0,
+-export ([server/0, 
+          start_link/0,
           go_recv/1]).
 
 %% TimeOut for connection,in milliseconds.
@@ -21,20 +22,16 @@
 %% Port for connection
 -define (PORT, 8080).
 
-
-
-
-
-
-
-
-
 %%%===================================================================
 %%% API
 %%%===================================================================
- start_link() ->
-     io:format("http_mini_gen_serv gen_server start_link_ECHO (pid ~p)~n", [self()]),
-     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link() ->
+    io:format("http_mini_gen_serv gen_server start_link_ECHO (pid ~p)~n", [self()]),
+    {ok, spawn_link(fun server/0)}.
+
+    %% spawn (http_mini_tcp_serv, server, []).
+
+%%start_link({local, ?SERVER}, ?MODULE, [], []).
 
 
 %%--------------------------------------------------------------------
@@ -54,8 +51,10 @@ server () ->
 %%%===================================================================
 wait_conn(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
-    spawn (http_mini_tcp_serv, go_recv, [Sock] ),
-    %%            io:format("Pid=~p~n", [Pid]),
+%%% этот пид должен передаться супервайзеру
+%%% 
+    Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
+                io:format("Pid=~p~n", [Pid]),
     wait_conn(LSock).
 
 
