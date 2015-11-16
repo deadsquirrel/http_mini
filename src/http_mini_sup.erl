@@ -99,3 +99,12 @@ init([]) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+        
+%% info(Pid) ->  
+%%     Spec = [registered_name, initial_call, links],
+%%     case process_info(Pid, Spec) of
+%%         undefined ->
+%%             undefined;
+%%         Result ->
+%%             [{pid, Pid}|Result]
+%%     end.

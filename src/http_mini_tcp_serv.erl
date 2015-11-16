@@ -12,7 +12,8 @@
 %% API
 -export ([server/0, 
           start_link/0,
-          go_recv/1]).
+          go_recv/1,
+          request_port/0]).
 
 %% TimeOut for connection,in milliseconds.
 -define (TIMEOUT, 5000).
@@ -20,7 +21,7 @@
 -define(SERVER, ?MODULE).
 
 %% Port for connection
--define (PORT, 8080).
+-define (PORT, 7777).
 
 %%%===================================================================
 %%% API
@@ -51,8 +52,6 @@ server () ->
 %%%===================================================================
 wait_conn(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
-%%% этот пид должен передаться супервайзеру
-%%% 
     Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
                 io:format("Pid=~p~n", [Pid]),
     wait_conn(LSock).
@@ -63,9 +62,20 @@ go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
         {ok, M} ->
             %%io:format("Sock=~p,~n self()=~p~n Msg=~p~n", [Sock, self(), M]),
-            gen_tcp:send (Sock, M),
+                        gen_tcp:send (Sock, M),
             go_recv(Sock);
         _ ->
             %%            io:format("SockClose=~p, Bb=~p~n", [Sock, Bb]),
             ok = gen_tcp:close(Sock)
     end.
+
+request_port() ->
+    gs_config ! {self(), request_port},
+    Pid = whereis(gs_config),
+    receive
+        {Pid, SPort} -> SPort
+    after 2000 ->
+            timeout
+    end.
+
+

@@ -17,7 +17,8 @@
 %% API
 -export([
          start_link/0,
-         get_state/0
+         get_state/0,
+         loop/1
         ]).
 
 %% gen_server callbacks
@@ -29,7 +30,8 @@
 -record(state,
         {
           time_started :: calendar:datetime(),
-          req_processed = 0 :: integer()
+          req_processed = 0 :: integer(),
+          port_connect = ?PORT :: integer()
         }).
 
 %%%===================================================================
@@ -55,6 +57,30 @@ start_link() ->
 -spec get_state() -> #state{}.
 get_state() ->
     gen_server:call(?SERVER, get_me_state).
+
+
+
+
+
+
+%%%===================================================================
+%%% цикл приема, отфильтровываем запрос от tcp_serv
+%%%===================================================================
+	    
+loop(X) ->
+    receive
+        request_port ->
+            io:format("Received:~p~n",[request_port]),
+            gen_server:call(?SERVER, request_port),
+            loop(X);
+        Any ->
+            io:format("Received:~p~n",[Any]),
+            loop(X)
+    end.
+
+
+
+
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -93,6 +119,11 @@ init([]) ->
 handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
+
+handle_call(request_port, _From, State) ->
+    Port_conn = State#state.port_connect,
+    {reply, Port_conn, State};
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
