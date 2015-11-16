@@ -122,6 +122,7 @@ handle_call(get_me_state, _From, State) ->
 
 handle_call(request_port, _From, State) ->
     Port_conn = State#state.port_connect,
+    io:format ("port~p~n", [Port_conn]),
     {reply, Port_conn, State};
     
 handle_call(_Request, _From, State) ->

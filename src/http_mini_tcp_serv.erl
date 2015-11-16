@@ -21,7 +21,7 @@
 -define(SERVER, ?MODULE).
 
 %% Port for connection
--define (PORT, 7777).
+%%-define (PORT, 7777).
 
 %%%===================================================================
 %%% API
@@ -41,11 +41,19 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec server() -> ok.
 server () ->
-    {ok, LSock} = gen_tcp:listen(
-                    ?PORT,
-                    [binary, {packet, 0}, {reuseaddr, true}, {active, false}]),
-    wait_conn (LSock),
-    gen_tcp:close(LSock).
+case gen_tcp:listen(
+                    request_port(),
+                    [binary, {packet, 0}, {reuseaddr, true}, {active, false}]) of
+
+    %% {ok, LSock} = gen_tcp:listen(
+    %%                 ?PORT,
+    %%                 [binary, {packet, 0}, {reuseaddr, true}, {active, false}]%% ), wait_conn (LSock);
+        %% gen_tcp:close(LSock)
+
+    {ok, LSock} ->  wait_conn (LSock);
+    {error, closed} ->
+        gen_tcp:close()
+end.
 
 %%%===================================================================
 %%% Internal functions
