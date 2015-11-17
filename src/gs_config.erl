@@ -18,7 +18,7 @@
 -export([
          start_link/0,
          get_state/0,
-         loop/1
+         get_port/0
         ]).
 
 %% gen_server callbacks
@@ -59,28 +59,22 @@ get_state() ->
     gen_server:call(?SERVER, get_me_state).
 
 
-
-
-
-
 %%%===================================================================
 %%% цикл приема, отфильтровываем запрос от tcp_serv
 %%%===================================================================
-	    
-loop(X) ->
-    receive
-        request_port ->
-            io:format("Received:~p~n",[request_port]),
-            gen_server:call(?SERVER, request_port),
-            loop(X);
-        Any ->
-            io:format("Received:~p~n",[Any]),
-            loop(X)
-    end.
-
-
-
-
+%% loop(X) ->
+%%     receive
+%%         request_port ->
+%%             io:format("Received:~p~n",[request_port]),
+%%             gen_server:call(?SERVER, request_port),
+%%             loop(X);
+%%         Any ->
+%%             io:format("Received:~p~n",[Any]),
+%%             loop(X)
+%%     end.
+  
+get_port() -> 
+    gen_server:call(?SERVER,  request_port).
 
 %%%===================================================================
 %%% gen_server callbacks
