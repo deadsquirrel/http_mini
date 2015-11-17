@@ -18,7 +18,8 @@
 -export([
          start_link/0,
          get_state/0,
-         set_operand_one/1
+         set_content/1,
+         get_cont/0
         ]).
 
 %% gen_server callbacks
@@ -31,7 +32,7 @@
         {
           time_started :: calendar:datetime(),
           req_processed = 0 :: integer(),
-          operand_one :: integer ()
+          get_content :: any ()
         }).
 
 %%%===================================================================
@@ -59,11 +60,17 @@ get_state() ->
     io:format("get_state/0, pid: ~p~n", [self()]),
     gen_server:call(?SERVER, get_me_state).
 
+%% тут хочу установить какой именно файл будем передавать, как контент 
+-spec set_content(A :: integer()) -> ok.
 
--spec set_operand_one(A :: integer()) -> ok.
-set_operand_one(A) ->
-    io:format("set_operand_one/1, pid: ~p, ~p~n", [self(), A]),
-    gen_server:call(?SERVER, {opA, A}).
+set_content(A) ->
+    io:format("set_cont/1, pid: ~p, ~p~n", [self(), A]),
+    gen_server:call(?SERVER, {set_content, A}).
+
+%% получаем контент tcp_serv`ом
+get_cont() ->
+    io:format("get_cont/0, pid: ~p~n", [self()]),
+    gen_server:call(?SERVER, get_content).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -103,10 +110,20 @@ handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
 
-handle_call({opA, SetA}, _From, State) ->
-    io:format("handle_call/3 (set A), pid: ~p~n", [self()]),
-    {reply, ok_A, State#state{operand_one = SetA}};
+%%=====================================================================
+%%%% todo 
+%%%% записать в рекорд, что именно будет нашим контентом
+%%%% получить запись из рекорда
+%%% этот кусок не дописан
 
+handle_call({set_content, SetA}, _From, State) ->
+    io:format("set file, pid: ~p~n", [self()]),
+    {reply, ok_cont, State#state{get_content = SetA}};
+
+handle_call({get_content, SetA}, _From, State) ->
+    io:format("set file, pid: ~p~n", [self()]),
+    {reply, ok_cont, State#state{get_content = SetA}};
+%%===================================================================
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

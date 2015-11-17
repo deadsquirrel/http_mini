@@ -13,7 +13,8 @@
 -export ([server/0, 
           start_link/0,
           go_recv/1,
-          request_port/0]).
+          request_port/0,
+          request_content/0]).
 
 %% TimeOut for connection,in milliseconds.
 -define (TIMEOUT, 5000).
@@ -77,13 +78,27 @@ go_recv (Sock) ->
             ok = gen_tcp:close(Sock)
     end.
 
+%%%===================================================================
+%%% запрашиваем порт
+%%%===================================================================
 request_port() ->
     gs_config:get_port(),
     Pid = whereis(gs_config),
     receive
-        {Pid, SPort} -> SPort
+        {Pid, SPort} -> SPort,
+                        io:format ("port_on_tcp_serv ~p~n", [SPort])
     after 2000 ->
             timeout
     end.
 
-
+%%%===================================================================
+%%% запрашиваем чего б отдать пользователю
+%%%===================================================================
+request_content() ->
+    gs_content:get_cont(),
+    Pid = whereis(gs_content),
+    receive
+        {Pid, Scont} -> Scont
+    after 2000 ->
+            timeout
+    end.
