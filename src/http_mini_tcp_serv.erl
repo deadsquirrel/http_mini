@@ -27,7 +27,7 @@
 %%% API
 %%%===================================================================
 start_link() ->
-    io:format("http_mini_gen_serv gen_server start_link_ECHO (pid ~p)~n", [self()]),
+    io:format("http_mini_gen_serv tart_link_ECHO (pid ~p)~n", [self()]),
     {ok, spawn_link(fun server/0)}.
 
     %% spawn (http_mini_tcp_serv, server, []).
@@ -69,16 +69,16 @@ go_recv (Sock) ->
     %%            io:format("SockOpen=~p~n", [Sock]),
     case gen_tcp:recv(Sock, 0) of
         {ok, M} ->
-            %%io:format("Sock=~p,~n self()=~p~n Msg=~p~n", [Sock, self(), M]),
+    %%io:format("Sock=~p,~n self()=~p~n Msg=~p~n", [Sock, self(), M]),
                         gen_tcp:send (Sock, M),
             go_recv(Sock);
         _ ->
-            %%            io:format("SockClose=~p, Bb=~p~n", [Sock, Bb]),
+     %%            io:format("SockClose=~p, Bb=~p~n", [Sock, Bb]),
             ok = gen_tcp:close(Sock)
     end.
 
 request_port() ->
-    gs_config ! {self(), request_port},
+    gs_config:get_port(),
     Pid = whereis(gs_config),
     receive
         {Pid, SPort} -> SPort
