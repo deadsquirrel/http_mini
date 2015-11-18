@@ -28,7 +28,7 @@
 %%% API
 %%%===================================================================
 start_link() ->
-    io:format("http_mini_gen_serv tart_link_ECHO (pid ~p)~n", [self()]),
+    io:format("http_mini_gen_serv start_link_ECHO (pid ~p)~n", [self()]),
     {ok, spawn_link(fun server/0)}.
 
     %% spawn (http_mini_tcp_serv, server, []).
