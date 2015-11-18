@@ -32,7 +32,7 @@
         {
           time_started :: calendar:datetime(),
           req_processed = 0 :: integer(),
-          get_content :: any ()
+          content :: any ()
         }).
 
 %%%===================================================================
@@ -61,13 +61,14 @@ get_state() ->
     gen_server:call(?SERVER, get_me_state).
 
 %% тут хочу установить какой именно файл будем передавать, как контент 
--spec set_content(A :: integer()) -> ok.
+-spec set_content(FileIn :: any()) -> ok.
 
-set_content(A) ->
-    io:format("set_cont/1, pid: ~p, ~p~n", [self(), A]),
-    gen_server:call(?SERVER, {set_content, A}).
+set_content(FileIn) ->
+    io:format("set_cont/1, pid: ~p, ~p~n", [self(), FileIn]),
+    gen_server:call(?SERVER, {set_content, FileIn}).
 
 %% получаем контент tcp_serv`ом
+
 get_cont() ->
     io:format("get_cont/0, pid: ~p~n", [self()]),
     gen_server:call(?SERVER, get_content).
@@ -118,11 +119,13 @@ handle_call(get_me_state, _From, State) ->
 
 handle_call({set_content, SetA}, _From, State) ->
     io:format("set file, pid: ~p~n", [self()]),
-    {reply, ok_cont, State#state{get_content = SetA}};
+    {reply, ok_cont, State#state{content = SetA}};
 
-handle_call({get_content, SetA}, _From, State) ->
+handle_call(get_content, _From, State) ->
     io:format("set file, pid: ~p~n", [self()]),
-    {reply, ok_cont, State#state{get_content = SetA}};
+    Fin = State#state.content,
+    {reply,  Fin,  State};
+
 %%===================================================================
 
 handle_call(_Request, _From, State) ->
