@@ -28,7 +28,7 @@
 %%% API
 %%%===================================================================
 start_link() ->
-    io:format("http_mini_gen_serv start_link_ECHO (pid ~p)~n", [self()]),
+%%    io:format("http_mini_gen_serv start_link_ECHO (pid ~p)~n", [self()]),
     {ok, spawn_link(fun server/0)}.
 
     %% spawn (http_mini_tcp_serv, server, []).
@@ -42,19 +42,12 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec server() -> ok.
 server () ->
-case gen_tcp:listen(
-                    request_port(),
-                    [binary, {packet, 0}, {reuseaddr, true}, {active, false}]) of
+    {ok, LSock} =  gen_tcp:listen(
+                     request_port(),
+                     [binary, {packet, 0}, {reuseaddr, true}, {active, false}]),
+    wait_conn (LSock),
+    gen_tcp:close(LSock).
 
-    %% {ok, LSock} = gen_tcp:listen(
-    %%                 ?PORT,
-    %%                 [binary, {packet, 0}, {reuseaddr, true}, {active, false}]%% ), wait_conn (LSock);
-        %% gen_tcp:close(LSock)
-
-    {ok, LSock} ->  wait_conn (LSock);
-    {error, closed} ->
-        gen_tcp:close()
-end.
 
 %%%===================================================================
 %%% Internal functions
