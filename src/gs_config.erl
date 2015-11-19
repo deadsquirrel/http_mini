@@ -12,7 +12,7 @@
 
 -define(VERSION, 0.01).
 -define (TIMEOUT, 5000).
--define (PORT, 8080).
+-define (PORT, 8088).
 
 %% API
 -export([

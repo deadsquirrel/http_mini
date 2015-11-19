@@ -10,7 +10,7 @@
 -module(http_mini_tcp_serv).
 
 %% API
--export ([server/0, 
+-export ([server/0,
           start_link/0,
           go_recv/1,
           request_port/0,
@@ -42,11 +42,15 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec server() -> ok.
 server () ->
-    {ok, LSock} =  gen_tcp:listen(
-                     request_port(),
-                     [binary, {packet, 0}, {reuseaddr, true}, {active, false}]),
-    wait_conn (LSock),
-    gen_tcp:close(LSock).
+    case gen_tcp:listen(
+           request_port(),
+           [binary, {packet, 0}, {reuseaddr, true}, {active, false}])
+    of
+        {ok, LSock} ->  wait_conn (LSock),
+                        gen_tcp:close(LSock);
+        {error, Reason} -> Reason
+    end.
+
 
 
 %%%===================================================================
@@ -55,7 +59,7 @@ server () ->
 wait_conn(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
     Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
-                io:format("Pid=~p~n", [Pid]),
+                io:format("Wait Pid=~p~n", [Pid]),
     wait_conn(LSock).
 
 
@@ -74,15 +78,9 @@ go_recv (Sock) ->
 %%%===================================================================
 %%% запрашиваем порт
 %%%===================================================================
-request_port() ->
-    gs_config:get_port(),
-    Pid = whereis(gs_config),
-    receive
-        {Pid, SPort} -> SPort,
-                        io:format ("port_on_tcp_serv ~p~n", [SPort])
-    after 2000 ->
-            timeout
-    end.
+
+ request_port() ->
+     _Port_config =    gs_config:get_port().
 
 %%%===================================================================
 %%% запрашиваем чего б отдать пользователю
