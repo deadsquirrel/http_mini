@@ -12,7 +12,8 @@
 
 -define(VERSION, 0.01).
 -define (TIMEOUT, 5000).
--define (PORT, 8088).
+%%define (PORT, 8088).
+
 
 %% API
 -export([
@@ -30,8 +31,8 @@
 -record(state,
         {
           time_started :: calendar:datetime(),
-          req_processed = 0 :: integer(),
-          port_connect = ?PORT :: integer()
+          req_processed =0 :: integer,
+          port_connect =  application:get_env (http_mini, port) :: integer()
         }).
 
 %%%===================================================================
@@ -74,7 +75,7 @@ get_state() ->
 %%     end.
   
 get_port() -> 
-    gen_server:call(?SERVER,  request_port).
+    gen_server:call(?SERVER, request_port).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -114,9 +115,14 @@ handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
 
+%% handle_call(request_port, _From, State) ->
+%%     Port_conn = State#state.port_connect,
+%% %%    io:format ("port ~p~n", [Port_conn]),
+%%     {reply, Port_conn, State};
+
+
 handle_call(request_port, _From, State) ->
     Port_conn = State#state.port_connect,
-%%    io:format ("port ~p~n", [Port_conn]),
     {reply, Port_conn, State};
     
 handle_call(_Request, _From, State) ->
