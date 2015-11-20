@@ -19,7 +19,8 @@
          start_link/0,
          get_state/0,
 %%         set_content/1,
-         get_cont/0
+%%         get_cont/0,
+         get_content/0
         ]).
 
 %% gen_server callbacks
@@ -32,6 +33,7 @@
         {
 %%          time_started :: calendar:datetime(),
           req_processed = 0 :: integer(),
+%%          contentfile :: any (),
           content :: any ()
         }).
 
@@ -69,10 +71,10 @@ get_state() ->
 
 
 %% получаем контент tcp_serv`ом
+get_content() ->
+     io:format("get_content/0, pid: ~p~n", [self()]),
+     gen_server:call(?SERVER, get_content_sent).
 
-get_cont() ->
-    io:format("get_cont/0, pid: ~p~n", [self()]),
-    gen_server:call(?SERVER, get_content).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -93,9 +95,34 @@ init([]) ->
     io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
     %% TS = erlang:localtime(),
     %% {ok, #state{time_started = TS}}.
-    {ok, FC} = application:get_env(http_mini, fileout) ,
+    {ok, FC} = application:get_env(http_mini, fileout),
     io:format("FileOut = ~p~n", [FC]),
-    {ok, #state{content = FC}}.
+    Ral = readfile(FC),
+    {ok, #state{content = Ral}}.
+
+
+readfile(File) ->
+%%    FCont = 
+        case file:open (File, write) of 
+            {ok, _Pid} -> 
+                io:format("ok1~n", []),
+                case file:read_file (File) of
+                    {ok, Binary} -> 
+                        io:format("ok2~n", []),
+                        Binary,
+                        io:format("ok3~n", []);
+%%                        file:close (self()),
+                      {error, Reason} -> Reason
+                end;
+            
+            {error, Reason} -> Reason
+        end,
+    case  file:close (self()) of
+        ok -> closed;
+        {error, R} -> R
+    end,
+    io:format("ok4~n", []).
+%%    {ok, #state{content = FCont}}.
 
 
 %%--------------------------------------------------------------------
@@ -116,20 +143,9 @@ handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
 
-%%=====================================================================
-%% записать в рекорд, что именно будет нашим контентом
-%% получить запись из рекорда 
-%% прописала в app
-%% handle_call({set_content, SetA}, _From, State) ->
-%%     io:format("set file, pid: ~p~n", [self()]),
-%%     {reply, ok_cont, State#state{content = SetA}};
-
-handle_call(get_content, _From, State) ->
-    io:format("set file, pid: ~p~n", [self()]),
+handle_call(get_content_sent, _From, State) ->
     Fin = State#state.content,
     {reply,  Fin,  State};
-
-%%===================================================================
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

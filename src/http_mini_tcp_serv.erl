@@ -74,7 +74,7 @@ go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
         {ok, _M} ->
 %% по идее сюда надо вставить файл передаваемый
-            Outfile= gs_content:get_cont(),
+            Outfile= gs_content:get_content(),
                 io:format("OutFile=~p~n", [Outfile]),
             gen_tcp:send (Sock, Outfile),
             go_recv(Sock);
