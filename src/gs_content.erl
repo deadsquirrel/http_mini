@@ -97,12 +97,9 @@ init([]) ->
     %% {ok, #state{time_started = TS}}.
     {ok, FC} = application:get_env(http_mini, fileout),
     io:format("FileOut = ~p~n", [FC]),
-    Ral = case file:read_file(FC) of
-              {ok, Binary} -> 
-                  #state{content = Binary};
-              {error, Reason} -> Reason
-          end,
-    io:format("Ral = ~p~n", [Ral]).
+    {ok, Ral} = file:read_file(FC),
+    io:format("Ral = ~p~n", [Ral]), 
+    {ok, #state{content = Ral}}.
 
 
 %% readfile(File) ->
