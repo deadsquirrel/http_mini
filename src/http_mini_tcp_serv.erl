@@ -42,13 +42,18 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec server() -> ok.
 server () ->
-    case gen_tcp:listen(
-           request_port(),
-           [binary, {packet, 0}, {reuseaddr, true}, {active, false}])
-    of
-        {ok, LSock} ->  wait_conn (LSock),
-                        gen_tcp:close(LSock);
-        {error, Reason} -> Reason
+    case request_port() of
+        {ok, Port} ->
+            case gen_tcp:listen(
+                   Port,
+                   [binary, {packet, 0}, {reuseaddr, true}, {active, false}])
+            of
+                {ok, LSock} ->  wait_conn (LSock),
+                                gen_tcp:close(LSock);
+                {error, Reason} -> Reason
+            end;
+        _ ->
+            errorport
     end.
 
 
