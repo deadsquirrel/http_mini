@@ -30,9 +30,9 @@
 
 -record(state,
         {
-          time_started :: calendar:datetime(),
-          req_processed =0 :: integer,
-          port_connect =  application:get_env (http_mini, port) :: integer()
+%%          time_started :: calendar:datetime(),
+          req_processed = 0 :: integer (),
+          port_connect :: integer ()
         }).
 
 %%%===================================================================
@@ -94,8 +94,11 @@ get_port() ->
 %%--------------------------------------------------------------------
 init([]) ->
     io:format("http_mini_config gen_server init fun (pid ~p)~n", [self()]),
-    TS = erlang:localtime(),
-    {ok, #state{time_started = TS}}.
+    %% TS = erlang:localtime(),
+    %% {ok, #state{time_started = TS}},
+    PC = application:get_env (http_mini, port),
+    {ok, #state{port_connect = PC}}.
+
 
 %%--------------------------------------------------------------------
 %% @private
@@ -114,12 +117,6 @@ init([]) ->
 handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
-
-%% handle_call(request_port, _From, State) ->
-%%     Port_conn = State#state.port_connect,
-%% %%    io:format ("port ~p~n", [Port_conn]),
-%%     {reply, Port_conn, State};
-
 
 handle_call(request_port, _From, State) ->
     Port_conn = State#state.port_connect,

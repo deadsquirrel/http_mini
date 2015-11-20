@@ -18,7 +18,7 @@
 -export([
          start_link/0,
          get_state/0,
-         set_content/1,
+%%         set_content/1,
          get_cont/0
         ]).
 
@@ -30,7 +30,7 @@
 
 -record(state,
         {
-          time_started :: calendar:datetime(),
+%%          time_started :: calendar:datetime(),
           req_processed = 0 :: integer(),
           content :: any ()
         }).
@@ -61,11 +61,12 @@ get_state() ->
     gen_server:call(?SERVER, get_me_state).
 
 %% тут хочу установить какой именно файл будем передавать, как контент 
--spec set_content(FileIn :: any()) -> ok.
+%% сделала по новому
+%% -spec set_content(FileIn :: any()) -> ok.
+%% set_content(FileIn) ->
+%%     io:format("set_cont/1, pid: ~p, ~p~n", [self(), FileIn]),
+%%     gen_server:call(?SERVER, {set_content, FileIn}).
 
-set_content(FileIn) ->
-    io:format("set_cont/1, pid: ~p, ~p~n", [self(), FileIn]),
-    gen_server:call(?SERVER, {set_content, FileIn}).
 
 %% получаем контент tcp_serv`ом
 
@@ -90,8 +91,12 @@ get_cont() ->
 %%--------------------------------------------------------------------
 init([]) ->
     io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
-    TS = erlang:localtime(),
-    {ok, #state{time_started = TS}}.
+    %% TS = erlang:localtime(),
+    %% {ok, #state{time_started = TS}}.
+    {ok, FC} = application:get_env(http_mini, fileout) ,
+    io:format("FileOut = ~p~n", [FC]),
+    {ok, #state{content = FC}}.
+
 
 %%--------------------------------------------------------------------
 %% @private
@@ -113,12 +118,11 @@ handle_call(get_me_state, _From, State) ->
 
 %%=====================================================================
 %% записать в рекорд, что именно будет нашим контентом
-%% получить запись из рекорда
-
-
-handle_call({set_content, SetA}, _From, State) ->
-    io:format("set file, pid: ~p~n", [self()]),
-    {reply, ok_cont, State#state{content = SetA}};
+%% получить запись из рекорда 
+%% прописала в app
+%% handle_call({set_content, SetA}, _From, State) ->
+%%     io:format("set file, pid: ~p~n", [self()]),
+%%     {reply, ok_cont, State#state{content = SetA}};
 
 handle_call(get_content, _From, State) ->
     io:format("set file, pid: ~p~n", [self()]),

@@ -13,8 +13,10 @@
 -export ([server/0,
           start_link/0,
           go_recv/1,
-          request_port/0,
-          request_content/0]).
+          request_port/0
+%% ,
+%%           request_content/0
+         ]).
 
 %% TimeOut for connection,in milliseconds.
 -define (TIMEOUT, 5000).
@@ -69,14 +71,14 @@ wait_conn(LSock) ->
 
 
 go_recv (Sock) ->
-    %%            io:format("SockOpen=~p~n", [Sock]),
     case gen_tcp:recv(Sock, 0) of
-        {ok, M} ->
-    %%io:format("Sock=~p,~n self()=~p~n Msg=~p~n", [Sock, self(), M]),
-                        gen_tcp:send (Sock, M),
+        {ok, _M} ->
+%% по идее сюда надо вставить файл передаваемый
+            Outfile= gs_content:get_cont(),
+                io:format("OutFile=~p~n", [Outfile]),
+            gen_tcp:send (Sock, Outfile),
             go_recv(Sock);
         _ ->
-     %%            io:format("SockClose=~p, Bb=~p~n", [Sock, Bb]),
             ok = gen_tcp:close(Sock)
     end.
 
@@ -84,17 +86,19 @@ go_recv (Sock) ->
 %%% запрашиваем порт
 %%%===================================================================
 
- request_port() ->
-     _Port_config =    gs_config:get_port().
+request_port() ->
+    _Port_config = gs_config:get_port().
 
 %%%===================================================================
 %%% запрашиваем чего б отдать пользователю
-%%%===================================================================
-request_content() ->
-    gs_content:get_cont(),
-    Pid = whereis(gs_content),
-    receive
-        {Pid, Scont} -> Scont
-    after 2000 ->
-            timeout
-    end.
+%%% наверное надо проверить на ошибки
+%%%==== ===============================================================
+%% request_content() ->
+%%     gs_content:get_cont().
+
+    %% Pid = whereis(gs_content),
+    %% receive
+    %%     {Pid, Scont} -> Scont
+    %% after 2000 ->
+    %%         timeout
+    %% end.
