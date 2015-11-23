@@ -2,10 +2,29 @@
 
 -export ([pars/2]).
 
+
+
+-record(uri,
+        {host:: any(),
+         location:: any(),        
+         useragent :: any(),
+         accept :: any(),
+         acceptlanguage :: any(),
+         acceptcharset :: any()
+        }).
+
 %% кто вызывает этот модуль? 
 %% кто-то должен увеличивать К
 %% go_recv?
 %% на сокет построчно приходит??
+%%---------------------------------------------------------
+%% handle_call(get_me_state, _From, State) ->
+%%     CurrNum = State#state.req_processed,
+%%     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
+
+
+
+
 
 pars (<<List>>, K) -> 
 
@@ -24,6 +43,8 @@ pars_st1 ([H,H2|T]) ->
             H == "GET" ->
                 if 
                     T =="HTTP/1.0" -> 
+                        #uri{location = H2};
+%%                        io:format("Location=~p~n", [H2]),
                         H2;
                     true -> error
                 end;
@@ -36,10 +57,10 @@ pars_st ([H|T]) ->
     _Url1 =
         if 
             H == "Host" ->
-                T;
+               #uri{host = T};
+%%        io:format("Host=~p~n", [T]);
             true -> error
         end.
-
 
 
 
