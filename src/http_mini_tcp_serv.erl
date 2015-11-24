@@ -81,9 +81,7 @@ go_recv (Sock) ->
             io:format("Head = ~p~n", [H]),
             io:format("Tail = ~p~n", [T]),
             if H == "GET" ->
-                    
-                    oK;
-                    %%parsing:pars(T, 1);
+                    parsing:pars(Stroka);
                true -> xpenb
             end,
             
@@ -95,16 +93,6 @@ go_recv (Sock) ->
             go_recv(Sock)
                 
     end.
-
-
-
-
-
-%%         <<"asdf">>
-        %% <<"GET /about.html HTTP/1.0\r\nHost: localhost:8888\r\n\r\n">>
-%%        } ->
-            %% по идее сюда надо вставить содержимое файл передаваемый
-
 
         %% _Oth ->
         %%     io:format("Ya vizhu: ~p~n", [_Oth]),

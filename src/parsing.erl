@@ -1,40 +1,38 @@
 -module (parsing).
 
--export ([pars/2]).
+-export ([pars/1]).
 
-
-
--record(uri,
-        {host:: any(),
-         location:: any(),        
-         useragent :: any(),
-         accept :: any(),
-         acceptlanguage :: any(),
-         acceptcharset :: any()
-        }).
 
 %% кто вызывает этот модуль? 
 %% кто-то должен увеличивать К
 %% go_recv?
 %% на сокет построчно приходит??
-%%---------------------------------------------------------
-%% handle_call(get_me_state, _From, State) ->
-%%     CurrNum = State#state.req_processed,
-%%     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
+%% -----------------------------
 
+%% pars (<<List>>, K) -> 
+%%     if 
+%%         K==1 ->
+%%             pars_st1 (binary:split (<<List>>, <<" ">>, [global]), []);
+%%         K > 1 ->
+%%             pars_st (binary:split(<<List>>, <<":">>), [])
+%%     end.     
 
+pars (List) -> 
+    List2 = string:tokens(List, "\r\n"),
+    io:format("List2=~p~n", [List2]),
+    pars1(List2, 1, []).
 
-
-
-pars (<<List>>, K) -> 
-
+pars1 ([], _K, Acc) -> Acc; %%нужно вернуть аккумулятор
+pars1 ([H|T], K, Acc) ->
     if 
         K==1 ->
-            pars_st1 (binary:split (<<List>>, <<" ">>, [global]));
+            Str = pars_st1 (string:tokens(H, " ")),
+            Acc=[Str|Acc];
         K > 1 ->
-            pars_st (binary:split(<<List>>, <<":">>))
-    end.     
-
+            Str1= pars_stn (string:tokens(H, ": ")),
+            Acc=[Str1|Acc]
+    end,
+    pars1(T, K+1, Acc).
 
 
 pars_st1 ([H,H2|T]) ->
@@ -43,9 +41,9 @@ pars_st1 ([H,H2|T]) ->
             H == "GET" ->
                 if 
                     T =="HTTP/1.0" -> 
-                        #uri{location = H2};
+                       H2
 %%                        io:format("Location=~p~n", [H2]),
-                        H2;
+                        ;
                     true -> error
                 end;
             true -> error
@@ -53,11 +51,11 @@ pars_st1 ([H,H2|T]) ->
 
 
 
-pars_st ([H|T]) ->
+pars_stn ([H|T]) ->
     _Url1 =
         if 
             H == "Host" ->
-               #uri{host = T};
+                T;
 %%        io:format("Host=~p~n", [T]);
             true -> error
         end.
