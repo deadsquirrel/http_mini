@@ -6,7 +6,7 @@
 pars (List) -> 
     List2 = string:tokens(List, "\r\n"),
     io:format("List2=~p~n", [List2]),
-    Asdf = pars1(List2, 1, []),
+    Asdf = pars1(List2, []),
     io:format("asdf = ~p~n", [Asdf]),
     Asdf.
 
@@ -26,37 +26,20 @@ pars (List) ->
 %%     end.
 
 
-pars1 ([], _K, Acc) -> lists:reverse(Acc);
-pars1 ([H|T], K, Acc) ->
-    io:format("H = ~p~n K=~p~n", [H, K]),
-    
-    Acc3 = if 
-               K==1 ->
-                   Str = pars_st1 (string:tokens(H, " ")),
-                   Acc2=[Str|Acc],
-                   io:format("Acc11: ~p~n", [Acc]),
-                   Acc2;
-               K > 1 ->
-                   Str1= pars_stn (string:tokens(H, " ")),
-                   Acc2=[Str1|Acc],
-                   io:format("Acc12: ~p~n", [Acc2]),
-                   Acc2
-           end,
-    io:format("Acc3: ~p~n", [Acc3]),
-    pars1(T, K+1, Acc3).
-
-
-pars_st1 ([H,H2|_T]) ->
-    if 
-        H == "GET" ->
-            {get, H2};
-        true -> error
-    end.
-
+pars1 ([], Acc) -> lists:reverse(Acc);
+pars1 ([H|T], Acc) ->
+    io:format("H = ~p~n", [H]),
+    Str= pars_stn (string:tokens(H, " ")),
+    Acc2=[Str|Acc],
+    io:format("Acc2: ~p~n", [Acc2]),
+    pars1(T, Acc2).
 
 
 pars_stn ([H|T]) ->
     if 
+        H == "GET" -> 
+            [H2|_T2] = T,
+            {get, H2};
         H == "Host:" ->
             {host, T};
         H == "User-Agent:" ->
