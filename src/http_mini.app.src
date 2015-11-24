@@ -12,7 +12,12 @@
    {registered,   [http_mini_name]},
    {included_applications, []},
    {applications, []},
-   {env,          [{port, 8888}, {fileout, "/home/yanki/prj/http_mini/about.html"}]},
+   {env,          [
+                   {port, 8888}, 
+                   {host, "localhost"}, 
+                   {file, "/about.html"},
+                   {fileout, "/home/yanki/prj/http_mini/about.html"}
+                  ]},
    {mod,          {http_mini_app, []}}
   ]}.
 

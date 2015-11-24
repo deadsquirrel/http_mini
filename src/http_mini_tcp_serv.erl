@@ -65,55 +65,92 @@ server () ->
 %%%===================================================================
 wait_conn(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
-    Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
-                io:format("Wait Pid=~p~n", [Pid]),
+    _Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
+%%                io:format("Wait Pid=~p~n", [Pid]),
     wait_conn(LSock).
 
 
 go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
-        
         {ok, Zapros} ->
             Stroka = binary_to_list(Zapros),
-            io:format("Stroka = ~p~n", [Stroka]),
-            io:format("Zapros = ~p~n", [Zapros]),
-            [H|T] = string:tokens(Stroka, " "),
-            io:format("Head = ~p~n", [H]),
-            io:format("Tail = ~p~n", [T]),
-            if H == "GET" ->
-                    parsing(Stroka);
-               true -> xpenb
-            end,
-            Outfile= gs_content:get_content(),
-            gen_tcp:send (Sock, Outfile),
-            io:format("OutFile=~p~n", [Outfile]),
-            go_recv(Sock)
-                
+%%            io:format("Stroka = ~p~n", [Stroka]),
+%%            io:format("Zapros = ~p~n", [Zapros]),
+            [H|_T] = string:tokens(Stroka, " "),
+%%            io:format("Head = ~p~n", [H]),
+%%            io:format("Tail = ~p~n", [T]),
+            Proplist = 
+                if H == "GET" ->
+                        parsing(Stroka);
+                   true -> xpenb
+                end,
+            
+            %% проверку по проплисту
+            %% если результат ожидаемый, отдаем файл
+            
+            Outfile = gs_content:get_content(),
+            %% "localhost"
+            {ok, Adress} = application:get_env (http_mini, host), 
+            io:format("Adress =~p~n ", [Adress]), 
+            {ok, Port} = application:get_env (http_mini, port), 
+            io:format("Port = ~p~n", [Port]), 
+            {ok, File} = application:get_env (http_mini, file),
+            io:format("File = ~p~n", [File]), 
+            %%  "/about.html"
+            Get = proplists:get_value(get, Proplist), 
+            io:format("Get  = ~p~n", [Get]), 
+            %%  "localhost:8888"
+            [Host] =  proplists:get_value(host, Proplist), 
+            [Host2|[P]] = string:tokens(Host, ":"),
+            io:format("Host2 = ~p~n", [Host2]), 
+            Port2= list_to_integer(P),
+            io:format("Port2 = ~p~n", [Port2]), 
+            Adress,
+            File,
+            Get,
+            Host2,
+            Port2,
+            if
+                Port == Port2 ->
+                    if 
+                        Host2 == Adress ->
+                            if
+                                Get == File
+                                ->
+                                    %%                            io:format("OutFile=~p~n", [Outfile]),
+                                    gen_tcp:send (Sock, Outfile);
+                                true -> 
+                                    gen_tcp:send (Sock, <<"HTTP/1.x 404 Not found\r\nServer: localhost/0.1.1\r\n\r\n<html><head></head><body>404 Not found File</body></html>\r\n">>), 
+                                    gen_tcp:close(Sock)
+                            end;
+                        true  ->
+                            gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
+                            gen_tcp:close(Sock)
+                    end,
+                    go_recv(Sock)
+            end;        
+        _Oth ->
+            gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
+            gen_tcp:close(Sock)
     end.
 
-        %% _Oth ->
-        %%     io:format("Ya vizhu: ~p~n", [_Oth]),
-        %%     gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
-        %%     gen_tcp:close(Sock)
 
-            %% _ ->
-            %%     ok = gen_tcp:close(Sock)
 %%%===================================================================
 %%% парсим полученные строки 
 %%%===================================================================
 parsing (List) -> 
     List2 = string:tokens(List, "\r\n"),
-    io:format("List2=~p~n", [List2]),
+%%    io:format("List2=~p~n", [List2]),
     Asdf = pars1(List2, []),
     io:format("asdf = ~p~n", [Asdf]),
     Asdf.
 
 pars1 ([], Acc) -> lists:reverse(Acc);
 pars1 ([H|T], Acc) ->
-    io:format("H = ~p~n", [H]),
+%%    io:format("H = ~p~n", [H]),
     Str= pars_stn (string:tokens(H, " ")),
     Acc2=[Str|Acc],
-    io:format("Acc2: ~p~n", [Acc2]),
+%%    io:format("Acc2: ~p~n", [Acc2]),
     pars1(T, Acc2).
 
 pars_stn ([H|T]) ->
