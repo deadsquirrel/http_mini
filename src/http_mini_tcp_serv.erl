@@ -73,20 +73,27 @@ wait_conn(LSock) ->
 go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
 
-        {ok, 
+        {ok, <<[H|T]>>} ->
+            if H == "GET"
+               parsing:pars()
          <<"asdf">>
         %% <<"GET /about.html HTTP/1.0\r\nHost: localhost:8888\r\n\r\n">>
         } ->
             %% по идее сюда надо вставить содержимое файл передаваемый
+
+
+
+
             Outfile= gs_content:get_content(),
             gen_tcp:send (Sock, Outfile),
                 io:format("OutFile=~p~n", [Outfile]),
             go_recv(Sock);
         
-        _Oth ->
-            io:format("Ya vizhu: ~p~n", [_Oth]),
-            gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
-            gen_tcp:close(Sock)
+        %% _Oth ->
+        %%     io:format("Ya vizhu: ~p~n", [_Oth]),
+        %%     gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
+        %%     gen_tcp:close(Sock)
+
             %% _ ->
             %%     ok = gen_tcp:close(Sock)
     end.
