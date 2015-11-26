@@ -69,10 +69,17 @@ wait_conn(LSock) ->
 %%                io:format("Wait Pid=~p~n", [Pid]),
     wait_conn(LSock).
 
+receive_data(Socket, SoFar) ->
+    receive {tcp,Socket,Bin} ->
+            receive_data(Socket, [Bin|SoFar]);
+            {tcp_closed,Socket} ->
+            list_to_binary(lists:reverse(SoFar)) end.
+
 
 go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
         {ok, Zapros} ->
+            receive_data(Sock, []),
             Stroka = binary_to_list(Zapros),
 %%            io:format("Stroka = ~p~n", [Stroka]),
 %%            io:format("Zapros = ~p~n", [Zapros]),
@@ -143,7 +150,7 @@ go_recv (Sock) ->
                     go_recv(Sock)
             end;        
         _Oth ->
-%% здесь Reply ущу не известна, надо объявить где-то еще, или написать вручную. пока что
+%% здесь Reply еще не известна, надо объявить где-то еще, или написать вручную. пока что
 %%            gen_tcp:send (Sock, Reply),
             gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
             gen_tcp:close(Sock)
