@@ -89,6 +89,9 @@ go_recv (Sock) ->
             %% если результат ожидаемый, отдаем файл
             
             Outfile = gs_content:get_content(),
+%% ----------------------------------------------------------------------------
+%%  из *app.src получаем следующие параметры параметры для сравнения
+%% ----------------------------------------------------------------------------
             %% "localhost"
             {ok, Adress} = application:get_env (http_mini, host), 
             io:format("Adress =~p~n ", [Adress]), 
@@ -96,6 +99,10 @@ go_recv (Sock) ->
             io:format("Port = ~p~n", [Port]), 
             {ok, File} = application:get_env (http_mini, file),
             io:format("File = ~p~n", [File]), 
+%% ----------------------------------------------------------------------------
+%%  парсим proplist
+%% ----------------------------------------------------------------------------
+
             %%  "/about.html"
             Get = proplists:get_value(get, Proplist), 
             io:format("Get  = ~p~n", [Get]), 
@@ -110,6 +117,10 @@ go_recv (Sock) ->
             Get,
             Host2,
             Port2,
+            Reply= reply:create_reply_header(_A, _B),
+%% ----------------------------------------------------------------------------
+%% сравниваем
+%% ----------------------------------------------------------------------------
             if
                 Port == Port2 ->
                     if 
@@ -117,19 +128,23 @@ go_recv (Sock) ->
                             if
                                 Get == File
                                 ->
-                                    %%                            io:format("OutFile=~p~n", [Outfile]),
+                                    %% io:format("OutFile=~p~n", [Outfile]),
+                                    gen_tcp:send (Sock, Reply),
+%% или соединить в один Reply
                                     gen_tcp:send (Sock, Outfile);
                                 true -> 
-                                    gen_tcp:send (Sock, <<"HTTP/1.x 404 Not found\r\nServer: localhost/0.1.1\r\n\r\n<html><head></head><body>404 Not found File</body></html>\r\n">>), 
+                                    gen_tcp:send (Sock, Reply), 
                                     gen_tcp:close(Sock)
                             end;
                         true  ->
-                            gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
+                            gen_tcp:send (Sock, Reply),
                             gen_tcp:close(Sock)
                     end,
                     go_recv(Sock)
             end;        
         _Oth ->
+%% здесь Reply ущу не известна, надо объявить где-то еще, или написать вручную. пока что
+%%            gen_tcp:send (Sock, Reply),
             gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
             gen_tcp:close(Sock)
     end.
