@@ -69,17 +69,13 @@ wait_conn(LSock) ->
 %%                io:format("Wait Pid=~p~n", [Pid]),
     wait_conn(LSock).
 
-receive_data(Socket, SoFar) ->
-    receive {tcp,Socket,Bin} ->
-            receive_data(Socket, [Bin|SoFar]);
-            {tcp_closed,Socket} ->
-            list_to_binary(lists:reverse(SoFar)) end.
-
 
 go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
         {ok, Zapros} ->
+%% not sure --------------
             receive_data(Sock, []),
+%% end of not sure --------
             Stroka = binary_to_list(Zapros),
 %%            io:format("Stroka = ~p~n", [Stroka]),
 %%            io:format("Zapros = ~p~n", [Zapros]),
@@ -124,7 +120,7 @@ go_recv (Sock) ->
             Get,
             Host2,
             Port2,
-            Reply= reply:create_reply_header(_A, _B),
+%            Reply= reply:create_reply_header(_A, _B),
 %% ----------------------------------------------------------------------------
 %% сравниваем
 %% ----------------------------------------------------------------------------
@@ -193,6 +189,19 @@ pars_stn ([H|T]) ->
         true -> 
             net_takoy_bukvi
     end.
+
+
+
+
+
+%%%===================================================================
+%%% получение фрагментами и объединение
+%%%===================================================================
+receive_data(Socket, SoFar) ->
+    receive {tcp,Socket,Bin} ->
+            receive_data(Socket, [Bin|SoFar]);
+            {tcp_closed,Socket} ->
+            list_to_binary(lists:reverse(SoFar)) end.
 
 %%%===================================================================
 %%% запрашиваем порт
