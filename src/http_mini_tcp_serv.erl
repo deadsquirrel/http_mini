@@ -102,6 +102,8 @@ go_recv (Sock) ->
             io:format("Port = ~p~n", [Port]), 
             {ok, File} = application:get_env (http_mini, file),
             io:format("File = ~p~n", [File]), 
+            {ok, Reply} = application:get_env (http_mini, fileout),
+            io:format("ACHTUNG! Reply = ~p~n", [Reply]), 
 %% ----------------------------------------------------------------------------
 %%  парсим proplist
 %% ----------------------------------------------------------------------------
@@ -120,7 +122,6 @@ go_recv (Sock) ->
             Get,
             Host2,
             Port2,
-%            Reply= reply:create_reply_header(_A, _B),
 %% ----------------------------------------------------------------------------
 %% сравниваем
 %% ----------------------------------------------------------------------------
@@ -132,11 +133,11 @@ go_recv (Sock) ->
                                 Get == File
                                 ->
                                     %% io:format("OutFile=~p~n", [Outfile]),
-                                    gen_tcp:send (Sock, Reply),
+                                    gen_tcp:send (Sock, responce(twohundred, Reply)),
 %% или соединить в один Reply
                                     gen_tcp:send (Sock, Outfile);
                                 true -> 
-                                    gen_tcp:send (Sock, Reply), 
+                                    gen_tcp:send (Sock,responce(fortyfour, Reply)), 
                                     gen_tcp:close(Sock)
                             end;
                         true  ->
@@ -151,6 +152,27 @@ go_recv (Sock) ->
             gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
             gen_tcp:close(Sock)
     end.
+
+responce(fortyfour, _Resp) ->
+    <<"HTTP/1.x 404 Not found\r\nServer: localhost/0.1.1\r\n\r\n<html><head></head><body>404 Not found File</body></html>\r\n">>; 
+responce(thirtyfour, _Resp) ->
+<<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>;
+responce(twohundred, Reply) ->
+%%  в оригинальном модуле он есть. потестировать без него либо добавить
+    create_reply_header()++Reply;
+responce(_, _Resp) ->
+    ups.
+
+%% сначала попробую передать готовый бинарник, потом доделаю формирование 
+%% его в зависимости от
+create_reply_header () ->
+    [<<"HTTP/1.0 200 OK">>, 
+     <<"Server: Yanki's cool server/1.0">>,
+     <<"Date: Sat, 08 Mar 2014 22:53:46 GMT">>, 
+     <<"Content-Type: text/html">>,
+     <<"Content-Length: 113">>,
+     <<"\r\n\r\n">>].
+
 
 
 %%%===================================================================
@@ -189,10 +211,6 @@ pars_stn ([H|T]) ->
         true -> 
             net_takoy_bukvi
     end.
-
-
-
-
 
 %%%===================================================================
 %%% получение фрагментами и объединение
