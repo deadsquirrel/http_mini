@@ -65,8 +65,8 @@ server () ->
 %%%===================================================================
 wait_conn(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
-    _Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
-%%                io:format("Wait Pid=~p~n", [Pid]),
+    Pid = spawn (http_mini_tcp_serv, go_recv, [Sock] ),
+                io:format("Wait Pid=~p~n", [Pid]),
     wait_conn(LSock).
 
 
@@ -74,17 +74,20 @@ go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
         {ok, Zapros} ->
 %% not sure --------------
-            receive_data(Sock, []),
+%%            receive_data(Sock, []),
 %% end of not sure --------
             Stroka = binary_to_list(Zapros),
-%%            io:format("Stroka = ~p~n", [Stroka]),
-%%            io:format("Zapros = ~p~n", [Zapros]),
+            io:format("Stroka = ~p~n", [Stroka]),
+            io:format("Zapros = ~p~n", [Zapros]),
             [H|_T] = string:tokens(Stroka, " "),
 %%            io:format("Head = ~p~n", [H]),
 %%            io:format("Tail = ~p~n", [T]),
             Proplist = 
                 if H == "GET" ->
+%% может запустить тут процесс
                         parsing(Stroka);
+                        %% Pid = spawn (http_mini_tcp_serv, parsing, [Stroka] ),
+                        %% io:format("Parsing Pid=~p~n", [Pid]);
                    true -> xpenb
                 end,
             
@@ -102,8 +105,8 @@ go_recv (Sock) ->
             io:format("Port = ~p~n", [Port]), 
             {ok, File} = application:get_env (http_mini, file),
             io:format("File = ~p~n", [File]), 
-            {ok, Reply} = application:get_env (http_mini, fileout),
-            io:format("ACHTUNG! Reply = ~p~n", [Reply]), 
+%%            {ok, Reply} = application:get_env (http_mini, fileout),
+            io:format("ACHTUNG! Reply = ~p~n", [Outfile]), 
 %% ----------------------------------------------------------------------------
 %%  парсим proplist
 %% ----------------------------------------------------------------------------
@@ -133,15 +136,16 @@ go_recv (Sock) ->
                                 Get == File
                                 ->
                                     %% io:format("OutFile=~p~n", [Outfile]),
-                                    gen_tcp:send (Sock, responce(twohundred, Reply)),
-%% или соединить в один Reply
-                                    gen_tcp:send (Sock, Outfile);
+                                    gen_tcp:send (Sock, responce(twohundred, Outfile)),
+                                    gen_tcp:close(Sock);
+                                %% или соединить в один Reply
+                                %% тут не файл отдаем, а сформированный ответ вместе с файлом!!!!! 
                                 true -> 
-                                    gen_tcp:send (Sock,responce(fortyfour, Reply)), 
+                                    gen_tcp:send (Sock,responce(fortyfour, Outfile)), 
                                     gen_tcp:close(Sock)
                             end;
                         true  ->
-                            gen_tcp:send (Sock, Reply),
+                            gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
                             gen_tcp:close(Sock)
                     end,
                     go_recv(Sock)
@@ -154,7 +158,7 @@ go_recv (Sock) ->
     end.
 
 responce(fortyfour, _Resp) ->
-    <<"HTTP/1.x 404 Not found\r\nServer: localhost/0.1.1\r\n\r\n<html><head></head><body>404 Not found File</body></html>\r\n">>; 
+    <<"HTTP/1.x 404 Not found\r\nServer: localhost\r\n\r\n<html><head></head><body>404 File not found</body></html>\r\n">>; 
 responce(thirtyfour, _Resp) ->
 <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>;
 responce(twohundred, Reply) ->
@@ -167,9 +171,10 @@ responce(_, _Resp) ->
 %% его в зависимости от
 create_reply_header () ->
     [<<"HTTP/1.0 200 OK">>, 
-     <<"Server: Yanki's cool server/1.0">>,
-     <<"Date: Sat, 08 Mar 2014 22:53:46 GMT">>, 
-     <<"Content-Type: text/html">>,
+     <<"\r\n">>, 
+     <<"Server: Yanki's cool server/1.0">>,<<"\r\n">>, 
+     <<"Date: Sat, 08 Mar 2014 22:53:46 GMT">>, <<"\r\n">>, 
+     <<"Content-Type: text/html">>, <<"\r\n">>, 
      <<"Content-Length: 113">>,
      <<"\r\n\r\n">>].
 
@@ -217,11 +222,11 @@ pars_stn ([H|T]) ->
 %%%===================================================================
 %%% получение фрагментами и объединение
 %%%===================================================================
-receive_data(Socket, SoFar) ->
-    receive {tcp,Socket,Bin} ->
-            receive_data(Socket, [Bin|SoFar]);
-            {tcp_closed,Socket} ->
-            list_to_binary(lists:reverse(SoFar)) end.
+%% receive_data(Socket, SoFar) ->
+%%     receive {tcp,Socket,Bin} ->
+%%             receive_data(Socket, [Bin|SoFar]);
+%%             {tcp_closed,Socket} ->
+%%             list_to_binary(lists:reverse(SoFar)) end.
 
 %%%===================================================================
 %%% запрашиваем порт
