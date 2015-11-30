@@ -173,7 +173,9 @@ create_reply_header () ->
      <<"Content-Length: 113">>,
      <<"\r\n\r\n">>].
 
-
+%%    lists:reverse
+%% create_reply_header2() ->
+%%   calendar:datetime
 
 %%%===================================================================
 %%% парсим полученные строки 
