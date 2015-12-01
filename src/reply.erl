@@ -9,17 +9,17 @@
 create_reply_header () ->
     [<<"HTTP/1.0 200 OK">>, 
      <<"\r\n">>, 
-     list_to_binary(serverName()),<<"\r\n">>,
-     list_to_binary(httpd_util:rfc1123_date()),
+     <<"Server: ">>,    list_to_binary(serverName()),<<"\r\n">>,
+     <<"Data: ">>,     list_to_binary(httpd_util:rfc1123_date()),
      <<"\r\n">>, 
      <<"Content-Type: text/html">>, <<"\r\n">>, 
-     
-<<"Content-Length: 13">>,
+     <<"Content-Length: ">>, 
+     byte_size(<<"fgdfjkgdfjkgj gjkdfh dfhg gtleg">>),
      <<"\r\n\r\n">>].
 
-serverName () ->
-    {ok, Name} = application:get_env (http_mini, servername),
-    Name.
+ serverName () ->
+     {ok, Name} = application:get_env (http_mini, servername),
+     Name.
 
 
 

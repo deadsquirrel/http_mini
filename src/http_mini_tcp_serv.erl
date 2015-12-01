@@ -163,20 +163,37 @@ responce(thirtyfour, _Resp) ->
 <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>;
 responce(twohundred, Reply) ->
 %%  в оригинальном модуле он есть. потестировать без него либо добавить
-    create_reply_header()++Reply;
+    create_reply_header(Reply)++Reply;
 responce(_, _Resp) ->
     ups.
 
 %% сначала попробую передать готовый бинарник, потом доделаю формирование 
 %% его в зависимости от
-create_reply_header () ->
+%% create_reply_header () ->
+%%     [<<"HTTP/1.0 200 OK">>, 
+%%      <<"\r\n">>, 
+%%      <<"Server: Yanki's cool server/1.0">>,<<"\r\n">>, 
+%%      <<"Date: Sat, 08 Mar 2014 22:53:46 GMT">>, <<"\r\n">>, 
+%%      <<"Content-Type: text/html">>, <<"\r\n">>, 
+%%      <<"Content-Length: 113">>,
+%%      <<"\r\n\r\n">>].
+
+
+create_reply_header (Outfile) ->
     [<<"HTTP/1.0 200 OK">>, 
      <<"\r\n">>, 
-     <<"Server: Yanki's cool server/1.0">>,<<"\r\n">>, 
-     <<"Date: Sat, 08 Mar 2014 22:53:46 GMT">>, <<"\r\n">>, 
+     <<"Server: ">>,    list_to_binary(serverName()),<<"\r\n">>,
+     <<"Data: ">>,     list_to_binary(httpd_util:rfc1123_date()),
+     <<"\r\n">>, 
      <<"Content-Type: text/html">>, <<"\r\n">>, 
-     <<"Content-Length: 113">>,
+     <<"Content-Length: ">>, 
+     list_to_binary(integer_to_list(byte_size(Outfile))),
      <<"\r\n\r\n">>].
+
+ serverName () ->
+     {ok, Name} = application:get_env (http_mini, servername),
+     Name.
+
 
 %%    lists:reverse
 %% create_reply_header2() ->
