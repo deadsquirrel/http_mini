@@ -99,8 +99,12 @@ go_recv (Sock) ->
 %%  из *app.src получаем следующие параметры параметры для сравнения
 %% ----------------------------------------------------------------------------
             %% "localhost"
-            {ok, Adress} = application:get_env (http_mini, host), 
-            io:format("Adress =~p~n ", [Adress]), 
+            %% {ok, Adress} = application:get_env (http_mini, host), 
+            %% io:format("Adress =~p~n ", [Adress]), 
+%% попробовать сделать выбор из списка адресов            
+ {ok, Adress} = application:get_env (http_mini, host), 
+             io:format("Adress =~p~n ", [Adress]), 
+
             {ok, Port} = application:get_env (http_mini, port), 
             io:format("Port = ~p~n", [Port]), 
             {ok, File} = application:get_env (http_mini, file),

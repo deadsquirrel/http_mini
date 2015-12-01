@@ -14,7 +14,8 @@
    {applications, []},
    {env,          [
                    {port, 8888}, 
-                   {host, "localhost"}, 
+                   {host, ["localhost", "localhoster"]}, 
+
                    {file, "/about.html"},
                    {fileout, "/home/yanki/prj/http_mini/about.html"},
                    {servername, "Yanki'a cool server v.1.1"} 
