@@ -6,21 +6,19 @@
 %%% @end
 %%% Created :  9 Nov 2015 by Yana P. Ribalchenko <yanki@hole.lake>
 %%%-------------------------------------------------------------------
--module(gs_content).
+-module(gs_config2).
 
 -behaviour(gen_server).
 
 -define(VERSION, 0.01).
 -define (TIMEOUT, 5000).
--define (PORT, 8080).
+
 
 %% API
 -export([
          start_link/0,
          get_state/0,
-%%         set_content/1,
-%%         get_cont/0,
-         get_content/0
+         get_port/0
         ]).
 
 %% gen_server callbacks
@@ -31,10 +29,8 @@
 
 -record(state,
         {
-%%          time_started :: calendar:datetime(),
-          req_processed = 0 :: integer(),
-%%          contentfile :: any (),
-          content :: any ()
+          req_processed = 0 :: integer (),
+          port_connect :: integer ()
         }).
 
 %%%===================================================================
@@ -50,7 +46,7 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-    io:format("gs_content gen_server start_link_content (pid ~p)~n", [self()]),
+    io:format("gs_config2 gen_server start_link_config (pid ~p)~n", [self()]),
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
@@ -59,80 +55,22 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec get_state() -> #state{}.
 get_state() ->
-    io:format("get_state/0, pid: ~p~n", [self()]),
     gen_server:call(?SERVER, get_me_state).
 
-%% тут хочу установить какой именно файл будем передавать, как контент 
-%% сделала по новому
-%% -spec set_content(FileIn :: any()) -> ok.
-%% set_content(FileIn) ->
-%%     io:format("set_cont/1, pid: ~p, ~p~n", [self(), FileIn]),
-%%     gen_server:call(?SERVER, {set_content, FileIn}).
 
-
-%% получаем контент tcp_serv`ом
-get_content() ->
-     io:format("get_content/0, pid: ~p~n", [self()]),
-     gen_server:call(?SERVER, get_content_sent).
-
+%%%===================================================================
+%%% цикл приема, отфильтровываем запрос от tcp_serv
+%%%===================================================================
+get_port() -> 
+    gen_server:call(?SERVER, request_port).
 
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
-
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Initializes the server
-%%
-%% @spec init(Args) -> {ok, State} |
-%%                     {ok, State, Timeout} |
-%%                     ignore |
-%%                     {stop, Reason}
-%% @end
-%%--------------------------------------------------------------------
 init([]) ->
-    io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
-    %% TS = erlang:localtime(),
-    %% {ok, #state{time_started = TS}}.
-    {ok, FC} = application:get_env(http_mini, fileout),
-    io:format("FileOut = ~p~n", [FC]),
-    {ok, Ral} = file:read_file(FC),
-    io:format("Ral = ~p~n", [Ral]), 
-    {ok, #state{content = Ral}}.
-
-
-%% readfile(File) ->
-%%     case file:read_file (File) of
-%%         {ok, Binary} -> 
-%% %%            io:format("ok1~n", []),
-%%             #state{content = Binary},   
-%%             io:format("ok2~p~n", [Binary]);
-%%         {error, Reason} -> Reason
-%%     end.
-
-%% readfile(File) ->
-%% %%    FCont = 
-%%         case file:open (File, write) of 
-%%             {ok, _Pid} -> 
-%%                 io:format("ok1~n", []),
-%%                 case file:read_file (File) of
-%%                     {ok, Binary} -> 
-%%                         io:format("ok2~n", []),
-%%                         Binary,
-%%                         io:format("ok3~n", []);
-%% %%                        file:close (self()),
-%%                       {error, Reason} -> Reason
-%%                 end;
-            
-%%             {error, Reason} -> Reason
-%%         end,
-%%     case  file:close (self()) of
-%%         ok -> closed;
-%%         {error, R} -> R
-%%     end,
-%%     io:format("ok4~n", []).
-%% %%    {ok, #state{content = FCont}}.
+    io:format("http_mini_config2 gen_server init fun (pid ~p)~n", [self()]),
+    PC = application:get_env (http_mini, port2),
+    {ok, #state{port_connect = PC}}.
 
 
 %%--------------------------------------------------------------------
@@ -153,11 +91,10 @@ handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
 
-handle_call(get_content_sent, _From, State) ->
-    Fin = State#state.content,
-    io:format("Fin=~p~n", [Fin]),
-    {reply,  Fin,  State};
-
+handle_call(request_port, _From, State) ->
+    Port_conn = State#state.port_connect,
+    {reply, Port_conn, State};
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -216,3 +153,5 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+

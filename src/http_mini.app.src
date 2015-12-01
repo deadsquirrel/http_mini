@@ -7,18 +7,29 @@
                    gs_content,
                    http_mini_tcp_serv,          
                    http_mini_app,
-                   http_mini_sup
+                   http_mini_sup,
+
+                   gs_config2,
+                   gs_content2,
+                   http_mini_tcp_serv2          
+
+
                   ]},
    {registered,   [http_mini_name]},
    {included_applications, []},
    {applications, []},
    {env,          [
                    {port, 8888}, 
-                   {host, ["localhost", "localhoster"]}, 
+                   {port2, 8111}, 
+                   {host, "localhost"},
+                   {host2,  "localhoster"}, 
 
                    {file, "/about.html"},
+                   {file2, "/about2.html"},
                    {fileout, "/home/yanki/prj/http_mini/about.html"},
-                   {servername, "Yanki'a cool server v.1.1"} 
+                   {fileout2, "/home/yanki/prj/http_mini/about2.html"},
+                   {servername, "Yanki'a cool server v.1.1"}, 
+                   {servername2, "Yanki'a cool server v.1.2"} 
                   ]},
    {mod,          {http_mini_app, []}}
   ]}.
