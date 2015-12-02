@@ -98,15 +98,16 @@ go_recv (Sock) ->
 %% ----------------------------------------------------------------------------
 %%  из *app.src получаем следующие параметры параметры для сравнения
 %% ----------------------------------------------------------------------------
-            %% "localhost"
-            {ok, Adress} = application:get_env (http_mini, host), 
-            io:format("Adress =~p~n ", [Adress]), 
             {ok, Port} = application:get_env (http_mini, port), 
             io:format("Port = ~p~n", [Port]), 
-            {ok, File} = application:get_env (http_mini, file),
-            io:format("File = ~p~n", [File]), 
-%%            {ok, Reply} = application:get_env (http_mini, fileout),
-            io:format("ACHTUNG! Reply = ~p~n", [Outfile]), 
+            %% "localhost"
+%%% кажется они тут не нужны, будем проверять на ходу соответствие Key - Value
+%%             {ok, Adress} = application:get_env (http_mini, host), 
+%%             io:format("Adress =~p~n ", [Adress]), 
+%%             {ok, File} = application:get_env (http_mini, file),
+%%             io:format("File = ~p~n", [File]), 
+%% %%            {ok, Reply} = application:get_env (http_mini, fileout),
+%%             io:format("ACHTUNG! Reply = ~p~n", [Outfile]), 
 %% ----------------------------------------------------------------------------
 %%  парсим proplist
 %% ----------------------------------------------------------------------------
@@ -116,43 +117,45 @@ go_recv (Sock) ->
             io:format("Get  = ~p~n", [Get]), 
             %%  "localhost:8888"
             [Host] =  proplists:get_value(host, Proplist), 
+%%% тут надо оптимизировать - в одну строку написать, а то 
             [Host2|[P]] = string:tokens(Host, ":"),
             io:format("Host2 = ~p~n", [Host2]), 
             Port2= list_to_integer(P),
             io:format("Port2 = ~p~n", [Port2]), 
-            Adress,
-            File,
+            %% Adress,
+            %% File,
             Get,
             Host2,
             Port2,
 %% ----------------------------------------------------------------------------
-%% сравниваем
+%% сравниваем HFPJ,HFNM!
 %% ----------------------------------------------------------------------------
             if
                 Port == Port2 ->
                     if 
-                        Host2 == Adress ->
-                            if
-                                Get == File
-                                ->
-                                    %% io:format("OutFile=~p~n", [Outfile]),
-                                    gen_tcp:send (Sock, responce(twohundred, Outfile)),
-                                    gen_tcp:close(Sock);
-                                %% или соединить в один Reply
-                                %% тут не файл отдаем, а сформированный ответ вместе с файлом!!!!! 
-                                true -> 
-                                    gen_tcp:send (Sock,responce(fortyfour, Outfile)), 
-                                    gen_tcp:close(Sock)
-                            end;
-                        true  ->
-                            gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                        {ok, ListHosts} = application:get_env (http_mini, hosts),
+                        %% Есть список адресов в кей-валюе структуре
+                        %% найти соответствие
+                        true = lists:member ({Host2, Send}, ListHosts), 
+                        Send
+                        
+%% эта часть не нужна вообще, надо соответствие из app взять и отослать
+                          
+                        ->
+                            gen_tcp:send (Sock, responce(twohundred, Send)),                                    gen_tcp:close(Sock);
+                        true -> 
+                            gen_tcp:send (Sock,responce(fortyfour, Outfile)), 
                             gen_tcp:close(Sock)
-                    end,
-                    go_recv(Sock)
-            end;        
+                    end;
+                true  ->
+                    gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                    gen_tcp:close(Sock)
+            end,
+            go_recv(Sock);
+        
         _Oth ->
-%% здесь Reply еще не известна, надо объявить где-то еще, или написать вручную. пока что
-%%            gen_tcp:send (Sock, Reply),
+            %% здесь Reply еще не известна, надо объявить где-то еще, или написать вручную. пока что
+            %%            gen_tcp:send (Sock, Reply),
             gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
             gen_tcp:close(Sock)
     end.
@@ -265,3 +268,7 @@ request_port() ->
     %% after 2000 ->
     %%         timeout
     %% end.
+
+%% передумала так делать, но пусть пока повисит. 
+%% readhost ([{_Host2, Path}|T]) -> Path,
+%%                                 readhost (T).

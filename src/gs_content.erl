@@ -95,11 +95,25 @@ init([]) ->
     io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
     %% TS = erlang:localtime(),
     %% {ok, #state{time_started = TS}}.
-    {ok, FC} = application:get_env(http_mini, fileout),
+
+%%    {ok, FC} = application:get_env(http_mini, fileouts),
+%% fileouts -  список туплей
+    {ok, FC} = application:get_env(http_mini, fileouts),
     io:format("FileOut = ~p~n", [FC]),
-    {ok, Ral} = file:read_file(FC),
+%% надо взять тупль из списка FC, а потом содержимое файла тупля
+    Ral = readlist(FC, []),
     io:format("Ral = ~p~n", [Ral]), 
     {ok, #state{content = Ral}}.
+
+
+%%     {ok, Ral} = file:read_file(FC),
+%%     io:format("Ral = ~p~n", [Ral]), 
+%%     {ok, #state{content = Ral}}.
+
+readlist([], Acc) -> Acc;
+readlist([{_Key, H}|T], Acc) -> 
+    {ok, Readfile} = file:read_file(H),
+    readlist(T, [Readfile|Acc]).
 
 
 %% readfile(File) ->

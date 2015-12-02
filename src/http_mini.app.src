@@ -7,7 +7,7 @@
                    gs_content,
                    http_mini_tcp_serv,          
                    http_mini_app,
-                   http_mini_sup,
+                   http_mini_sup
                   ]},
    {registered,   [http_mini_name]},
    {included_applications, []},
@@ -17,22 +17,22 @@
                    {hosts,
                     [
                      {"/localhost:8888/about.html", "localhost"},
-                     {"/localhoster:8888/abouts.html", "localhoster"}
-                    ],
-                   {files,
-                    [
-                     {1, "/about.html"},
-                     {2, "/about2.html"}
+                     {"/localhoster:8888/about2.html", "localhoster"}
                     ]},
+                   %% {files,
+                   %%  [
+                   %%   {1, "/about.html"},
+                   %%   {2, "/about2.html"}
+                   %%  ]},
 %%                   {file, "/about.html"},
                    {fileouts,
                     [
-                     {1, "/home/yanki/prj/http_mini/about.html"},
-                     {2, "/home/yanki/prj/http_mini/about2.html"}
-                    ]
-                   {servername, "Yanki'a cool server v.1.1"}, 
+                     {"/about.html", "/home/yanki/prj/http_mini/about.html"},
+                     {"/about2.html", "/home/yanki/prj/http_mini/about2.html"}
+                    ]},
+                    {servername, "Yanki'a cool server v.1.1"} 
                   ]},
    {mod,          {http_mini_app, []}}
-  ]}.
+                  ]}.
 
 
