@@ -91,8 +91,8 @@ init([]) ->
     
     AChild_tcp_serv = {http_mini_tcp_serv_name, 
                        {http_mini_tcp_serv, start_link, []},
-                       Restart, Shutdown, Type, [mini_http_tcp_serv]},
-    
+                       Restart, Shutdown, Type, [mini_http_tcp_serv]}, 
+
     AChild2_conf = {gs_config_name2, {gs_config2, start_link, []},
                      Restart, Shutdown, Type, [gs_config2]},
     
@@ -104,10 +104,12 @@ init([]) ->
                          Restart, Shutdown, Type, [mini_http_tcp_serv2]},
 
 
+
+
     {ok, 
-     {SupFlags, [AChild_conf, AChild_content, AChild_tcp_serv]},
-     {SupFlags, [AChild2_conf, AChild2_content, AChild2_tcp_serv]}
-    }.
+     {SupFlags, 
+      [AChild_conf, AChild_content, AChild_tcp_serv, 
+       AChild2_conf, AChild2_content, AChild2_tcp_serv]}}.
 
 
 %%%===================================================================
