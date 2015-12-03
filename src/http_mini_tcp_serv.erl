@@ -132,20 +132,22 @@ go_recv (Sock) ->
 %% ----------------------------------------------------------------------------
             if
                 Port == Port2 ->
-                    if 
-                        {ok, ListHosts} = application:get_env (http_mini, hosts),
-                        %% Есть список адресов в кей-валюе структуре
-                        %% найти соответствие
-                        true = lists:member ({Host2, Send}, ListHosts), 
-                        Send
-                        
-%% эта часть не нужна вообще, надо соответствие из app взять и отослать
-                          
-                        ->
-                            gen_tcp:send (Sock, responce(twohundred, Send)),                                    gen_tcp:close(Sock);
-                        true -> 
-                            gen_tcp:send (Sock,responce(fortyfour, Outfile)), 
-                            gen_tcp:close(Sock)
+                    {ok, ListHosts} = application:get_env (http_mini, hosts),
+                            io:format("ListHosts  ~p~n", [ListHosts]), 
+                    %% Есть список адресов в кей-валюе структуре
+                    %% найти соответствие
+                    
+                    case application:get_key(Host2) of 
+                        undefined -> 
+                            io:format("Ups. no host  ~p~n", [Host2]), 
+%%% Outfile тожу пока список, но попробуем отдаьт его пока так.
+%%% Поправить!!
+                            gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                            gen_tcp:close(Sock);
+                        {ok, Val}   -> Val,
+                                       io:format("Val = ~p~n", [Val]), 
+                                       gen_tcp:send (Sock, responce(twohundred, Val)),     
+                                       gen_tcp:close(Sock)
                     end;
                 true  ->
                     gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
@@ -169,18 +171,6 @@ responce(twohundred, Reply) ->
     create_reply_header(Reply)++Reply;
 responce(_, _Resp) ->
     ups.
-
-%% сначала попробую передать готовый бинарник, потом доделаю формирование 
-%% его в зависимости от
-%% create_reply_header () ->
-%%     [<<"HTTP/1.0 200 OK">>, 
-%%      <<"\r\n">>, 
-%%      <<"Server: Yanki's cool server/1.0">>,<<"\r\n">>, 
-%%      <<"Date: Sat, 08 Mar 2014 22:53:46 GMT">>, <<"\r\n">>, 
-%%      <<"Content-Type: text/html">>, <<"\r\n">>, 
-%%      <<"Content-Length: 113">>,
-%%      <<"\r\n\r\n">>].
-
 
 create_reply_header (Outfile) ->
     [<<"HTTP/1.0 200 OK">>, 
