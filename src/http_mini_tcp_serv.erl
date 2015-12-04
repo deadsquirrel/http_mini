@@ -137,11 +137,15 @@ go_recv (Sock) ->
                     %% Есть список адресов в кей-валюе структуре
                     %% найти соответствие
                     
-                    sorting (ListHosts, Host2),
-                    gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
-                    gen_tcp:close(Sock);
-
-
+                    Param = sorting (ListHosts, Host2),
+                    io:format("Param  ~p~n", [Param]), 
+                    if Param == nothing ->
+                            gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                            gen_tcp:close(Sock);
+                       true -> 
+                            gen_tcp:send (Sock,responce(twohundred, Param)),
+                            gen_tcp:close(Sock)
+                    end;
 %%                     case application:get_key(Host2) of 
 %%                         undefined -> 
 %%                             io:format("Ups. no host  ~p~n", [Host2]), 
@@ -268,8 +272,10 @@ request_port() ->
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
 
-sorting ([], _Host2) -> nothing;
+sorting ([], Host2) -> nothing,
+    io:format("Host2~p~n", [Host2]);
 sorting ([{H, Par}|_TListHosts], Host2) when H==Host2 -> 
-    Par;
+    Par,
+    io:format("Host2~p = Par~p~n", [Host2, Par]);
 sorting ([_H|TListHosts], Host2) -> 
     sorting (TListHosts, Host2).

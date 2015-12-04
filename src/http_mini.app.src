@@ -16,9 +16,13 @@
                    {port, 8888}, 
                    {hosts,
                     [
-                     {"/localhost:8888/about.html", "localhost"},
-                     {"/localhoster:8888/about2.html", "localhoster"}
+                     %% {"/localhost:8888/about.html", "localhost"},
+                     %% {"/localhoster:8888/about2.html", "localhoster"}
+                     {"localhost","/localhost:8888/about.html"},
+                     {"localhoster", "/localhoster:8888/about2.html"}
+
                     ]},
+
                    %% {files,
                    %%  [
                    %%   {1, "/about.html"},
