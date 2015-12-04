@@ -95,6 +95,8 @@ go_recv (Sock) ->
             %% если результат ожидаемый, отдаем файл
             
             Outfile = gs_content:get_content(),
+%% OutFile тут равен FileOut из функции. т.е. список
+%% берем из списка кусок ниже
 %% ----------------------------------------------------------------------------
 %%  из *app.src получаем следующие параметры параметры для сравнения
 %% ----------------------------------------------------------------------------
@@ -140,11 +142,18 @@ go_recv (Sock) ->
                     Param = sorting (ListHosts, Host2),
                     io:format("Param  ~p~n", [Param]), 
                     if Param == nothing ->
-                            gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                            gen_tcp:send (Sock,responce(thirtyfour, Get)),
                             gen_tcp:close(Sock);
                        true -> 
-                            gen_tcp:send (Sock,responce(twohundred, Param)),
-                            gen_tcp:close(Sock)
+                            Getting = readfile(Outfile, Get),
+                            io:format("Getting  ~p~n", [Getting]), 
+                            if Getting == nothing 
+                               -> gen_tcp:send (Sock,responce(fortyfour, Getting)),
+                                  gen_tcp:close(Sock);
+                               true -> 
+                                    gen_tcp:send (Sock,responce(twohundred, Getting)),
+                                    gen_tcp:close(Sock)
+                            end
                     end;
 %%                     case application:get_key(Host2) of 
 %%                         undefined -> 
@@ -279,3 +288,14 @@ sorting ([{H, Par}|_TListHosts], Host2) when H==Host2 ->
     io:format("Host2~p = Par~p~n", [Host2, Par]);
 sorting ([_H|TListHosts], Host2) -> 
     sorting (TListHosts, Host2).
+
+
+
+
+readfile([], Get) ->  nothing,
+    io:format("Get =~p~n", [Get]);
+readfile ([{H, Par}|_TList], Get) when H==Get -> 
+    Par,
+    io:format("Get~p = Par~p~n", [Get, Par]);
+readfile([_H|TList], Get) -> 
+    sorting (TList, Get).
