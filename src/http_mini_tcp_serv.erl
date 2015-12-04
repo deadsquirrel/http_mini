@@ -13,7 +13,8 @@
 -export ([server/0,
           start_link/0,
           go_recv/1,
-          request_port/0
+          request_port/0,
+          sorting/2
 %% ,
 %%           request_content/0
          ]).
@@ -94,7 +95,7 @@ go_recv (Sock) ->
             %% проверку по проплисту
             %% если результат ожидаемый, отдаем файл
             
-            Outfile = gs_content:get_content(),
+%%            Outfile = gs_content:get_content(),
 %% OutFile тут равен FileOut из функции. т.е. список
 %% берем из списка кусок ниже
 %% ----------------------------------------------------------------------------
@@ -138,29 +139,27 @@ go_recv (Sock) ->
                             io:format("ListHosts  ~p~n", [ListHosts]), 
                     %% Есть список адресов в кей-валюе структуре
                     %% найти соответствие
-                    
-                    Param = sorting (ListHosts, Host2),
-                    io:format("Param  ~p~n", [Param]), 
-                    if Param == nothing ->
+                    case sorting (ListHosts, Host2) of
+                        nothing ->
                             gen_tcp:send (Sock,responce(thirtyfour, Get)),
                             gen_tcp:close(Sock);
-                       true -> 
-                            Getting = readfile(Outfile, Get),
-                            io:format("Getting  ~p~n", [Getting]), 
-                            if Getting == nothing 
-                               -> gen_tcp:send (Sock,responce(fortyfour, Getting)),
-                                  gen_tcp:close(Sock);
-                               true -> 
-                                    gen_tcp:send (Sock,responce(twohundred, Getting)),
+                        Param ->
+                            case readfile(Param, Get) of
+                                nothing -> 
+                                    gen_tcp:send (Sock, responce(fortyfour, gg)),
+                                    gen_tcp:close(Sock);
+                                
+                                 Param2 -> 
+                                    gen_tcp:send (Sock,responce(twohundred, Param2)),
                                     gen_tcp:close(Sock)
                             end
                     end;
-%%                     case application:get_key(Host2) of 
-%%                         undefined -> 
-%%                             io:format("Ups. no host  ~p~n", [Host2]), 
+ %%                     case application:get_key(Host2) of 
+ %%                         undefined -> 
+ %%                             io:format("Ups. no host  ~p~n", [Host2]), 
 %% %%% Outfile тожу пока список, но попробуем отдаьт его пока так.
-%% %%% Поправить!!
-%%                             gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+ %% %%% Поправить!!
+ %%                             gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
 %%                             gen_tcp:close(Sock);
 %%                         {ok, Val}   -> Val,
 %%                                        io:format("Val = ~p~n", [Val]), 
@@ -168,7 +167,7 @@ go_recv (Sock) ->
 %%                                        gen_tcp:close(Sock)
 %%                     end;
                 true  ->
-                    gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                    gen_tcp:send (Sock,responce(thirtyfour, nothing)),
                     gen_tcp:close(Sock)
             end,
             go_recv(Sock);
@@ -190,7 +189,7 @@ responce(twohundred, Reply) ->
 responce(_, _Resp) ->
     ups.
 
-create_reply_header (Outfile) ->
+create_reply_header (Getting) ->
     [<<"HTTP/1.0 200 OK">>, 
      <<"\r\n">>, 
      <<"Server: ">>,    list_to_binary(serverName()),<<"\r\n">>,
@@ -198,7 +197,7 @@ create_reply_header (Outfile) ->
      <<"\r\n">>, 
      <<"Content-Type: text/html">>, <<"\r\n">>, 
      <<"Content-Length: ">>, 
-     list_to_binary(integer_to_list(byte_size(Outfile))),
+     list_to_binary(integer_to_list(byte_size(Getting))),
      <<"\r\n\r\n">>].
 
  serverName () ->
@@ -281,21 +280,21 @@ request_port() ->
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
 
-sorting ([], Host2) -> nothing,
-    io:format("Host2~p~n", [Host2]);
-sorting ([{H, Par}|_TListHosts], Host2) when H==Host2 -> 
-    Par,
-    io:format("Host2~p = Par~p~n", [Host2, Par]);
-sorting ([_H|TListHosts], Host2) -> 
-    sorting (TListHosts, Host2).
+sorting ([], Key) -> 
+     io:format("Key == ~p~n", [Key]), 
+     nothing;
+sorting ([{H, Par}|_TListHosts], Key) when H==Key -> 
+    io:format("Key~p => Par~p~n", [Key, Par]),
+    Par;
+sorting ([_H|TListHosts], Key) -> 
+    sorting (TListHosts, Key).
 
 
-
-
-readfile([], Get) ->  nothing,
-    io:format("Get =~p~n", [Get]);
+readfile([], Get) ->  
+    io:format("Get =~p~n", [Get]),
+    nothing;
 readfile ([{H, Par}|_TList], Get) when H==Get -> 
-    Par,
-    io:format("Get~p = Par~p~n", [Get, Par]);
+    io:format("Get~p => Par~p~n", [Get, Par]),
+    Par;
 readfile([_H|TList], Get) -> 
     sorting (TList, Get).
