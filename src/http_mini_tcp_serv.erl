@@ -137,18 +137,23 @@ go_recv (Sock) ->
                     %% Есть список адресов в кей-валюе структуре
                     %% найти соответствие
                     
-                    case application:get_key(Host2) of 
-                        undefined -> 
-                            io:format("Ups. no host  ~p~n", [Host2]), 
-%%% Outfile тожу пока список, но попробуем отдаьт его пока так.
-%%% Поправить!!
-                            gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
-                            gen_tcp:close(Sock);
-                        {ok, Val}   -> Val,
-                                       io:format("Val = ~p~n", [Val]), 
-                                       gen_tcp:send (Sock, responce(twohundred, Val)),     
-                                       gen_tcp:close(Sock)
-                    end;
+                    sorting (ListHosts, Host2),
+                    gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+                    gen_tcp:close(Sock);
+
+
+%%                     case application:get_key(Host2) of 
+%%                         undefined -> 
+%%                             io:format("Ups. no host  ~p~n", [Host2]), 
+%% %%% Outfile тожу пока список, но попробуем отдаьт его пока так.
+%% %%% Поправить!!
+%%                             gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+%%                             gen_tcp:close(Sock);
+%%                         {ok, Val}   -> Val,
+%%                                        io:format("Val = ~p~n", [Val]), 
+%%                                        gen_tcp:send (Sock, responce(twohundred, Val)),     
+%%                                        gen_tcp:close(Sock)
+%%                     end;
                 true  ->
                     gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
                     gen_tcp:close(Sock)
@@ -262,3 +267,9 @@ request_port() ->
 %% передумала так делать, но пусть пока повисит. 
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
+
+sorting ([], _Host2) -> nothing;
+sorting ([{H, Par}|_TListHosts], Host2) when H==Host2 -> 
+    Par;
+sorting ([_H|TListHosts], Host2) -> 
+    sorting (TListHosts, Host2).
