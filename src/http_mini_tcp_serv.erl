@@ -13,8 +13,7 @@
 -export ([server/0,
           start_link/0,
           go_recv/1,
-          request_port/0,
-          sorting/2
+          request_port/0
 %% ,
 %%           request_content/0
          ]).
@@ -139,17 +138,20 @@ go_recv (Sock) ->
                             io:format("ListHosts  ~p~n", [ListHosts]), 
                     %% Есть список адресов в кей-валюе структуре
                     %% найти соответствие
-                    case sorting (ListHosts, Host2) of
+                    case sorting (ListHosts, Host2, 0) of
                         nothing ->
                             gen_tcp:send (Sock,responce(thirtyfour, Get)),
                             gen_tcp:close(Sock);
-                        Param ->
-                            case readfile(Param, Get) of
+                        _Param ->
+                        {ok, Filesout} = application:get_env (http_mini, fileouts),
+                            io:format("Filesout  ~p~n Get=~p~n", [Filesout, Get]), 
+                            case sorting (Filesout, Get, 0) of
                                 nothing -> 
                                     gen_tcp:send (Sock, responce(fortyfour, gg)),
                                     gen_tcp:close(Sock);
                                 
-                                 Param2 -> 
+                                Param2 -> 
+                                    io:format("Param2 >>  ~p~n", [Param2]), 
                                     gen_tcp:send (Sock,responce(twohundred, Param2)),
                                     gen_tcp:close(Sock)
                             end
@@ -280,21 +282,26 @@ request_port() ->
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
 
-sorting ([], Key) -> 
-     io:format("Key == ~p~n", [Key]), 
-     nothing;
-sorting ([{H, Par}|_TListHosts], Key) when H==Key -> 
-    io:format("Key~p => Par~p~n", [Key, Par]),
+sorting ([], _Key, Par)  -> 
+%%     io:format("Key == ~p~n", [Key]), 
     Par;
-sorting ([_H|TListHosts], Key) -> 
-    sorting (TListHosts, Key).
-
-
-readfile([], Get) ->  
-    io:format("Get =~p~n", [Get]),
+sorting ([{H, _Par}|_], Key, _Par) when H=/=Key -> 
     nothing;
-readfile ([{H, Par}|_TList], Get) when H==Get -> 
-    io:format("Get~p => Par~p~n", [Get, Par]),
-    Par;
-readfile([_H|TList], Get) -> 
-    sorting (TList, Get).
+sorting ([{H, Par}|_], Key, Par) when H==Key -> 
+     io:format("Key~p => Par~p~n", [Key, Par]),
+     Par;
+sorting ([_H|TListHosts], Key, Par) -> 
+     sorting (TListHosts, Key, Par).
+
+
+%% readfile([], Get, Par) ->
+%%     io:format("=> Par ~p => ~p ~n", [Par, Get]),
+%%     Par;
+%% readfile ([{H, _Par}|[]], Get, _Par) when H=/=Get -> 
+%%     nothing;
+%% readfile ([{H, Par}|_TList], Get, Par) when H==Get -> 
+%%     io:format("Get~p => Par~p~n", [Get, Par]),
+%%     Par;
+%% readfile([_H|TList], Get, Par) -> 
+%%     readfile (TList, Get, Par).
+
