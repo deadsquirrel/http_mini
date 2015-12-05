@@ -145,6 +145,7 @@ go_recv (Sock) ->
                         _Param ->
                         {ok, Filesout} = application:get_env (http_mini, fileouts),
                             io:format("Filesout  ~p~n Get=~p~n", [Filesout, Get]), 
+                            Filesout,
                             case sorting (Filesout, Get, 0) of
                                 nothing -> 
                                     gen_tcp:send (Sock, responce(fortyfour, gg)),
@@ -152,7 +153,7 @@ go_recv (Sock) ->
                                 
                                 Param2 -> 
                                     io:format("Param2 >>  ~p~n", [Param2]), 
-                                    gen_tcp:send (Sock,responce(twohundred, Param2)),
+                                    gen_tcp:send (Sock,responce(twohundred, Get)),
                                     gen_tcp:close(Sock)
                             end
                     end;
@@ -185,9 +186,11 @@ responce(fortyfour, _Resp) ->
     <<"HTTP/1.x 404 Not found\r\nServer: localhost\r\n\r\n<html><head></head><body>404 File not found</body></html>\r\n">>; 
 responce(thirtyfour, _Resp) ->
 <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>;
-responce(twohundred, Reply) ->
-%%  в оригинальном модуле он есть. потестировать без него либо добавить
-    create_reply_header(Reply)++Reply;
+%% на вход пришло Get="/about.html"
+responce(twohundred, GetKey) ->
+%% надо по ключцу получить содержимое рекорда
+    Outfile = gs_content:get_content(GetKey),
+    create_reply_header(Outfile)++Outfile;
 responce(_, _Resp) ->
     ups.
 
@@ -199,6 +202,8 @@ create_reply_header (Getting) ->
      <<"\r\n">>, 
      <<"Content-Type: text/html">>, <<"\r\n">>, 
      <<"Content-Length: ">>, 
+%% надо считать содержимое файла, а на фходе у нас ключ!
+%% либо в response формировать ответ, который и приходит сюда 
      list_to_binary(integer_to_list(byte_size(Getting))),
      <<"\r\n\r\n">>].
 
@@ -282,16 +287,16 @@ request_port() ->
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
 
-sorting ([], _Key, Par)  -> 
-%%     io:format("Key == ~p~n", [Key]), 
-    Par;
-sorting ([{H, _Par}|_], Key, _Par) when H=/=Key -> 
+sorting ([], Key, AccPar)  -> 
+     io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
+    AccPar;
+sorting ([{H, _Par}|_], Key, _AccPar) when H=/=Key -> 
     nothing;
-sorting ([{H, Par}|_], Key, Par) when H==Key -> 
+sorting ([{H, Par}|_], Key, _AccPar) when H==Key -> 
      io:format("Key~p => Par~p~n", [Key, Par]),
      Par;
-sorting ([_H|TListHosts], Key, Par) -> 
-     sorting (TListHosts, Key, Par).
+sorting ([_H|TListHosts], Key, AccPar) -> 
+     sorting (TListHosts, Key, AccPar).
 
 
 %% readfile([], Get, Par) ->

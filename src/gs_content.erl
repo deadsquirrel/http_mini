@@ -20,7 +20,7 @@
          get_state/0,
 %%         set_content/1,
 %%         get_cont/0,
-         get_content/0
+         get_content/1
         ]).
 
 %% gen_server callbacks
@@ -71,9 +71,9 @@ get_state() ->
 
 
 %% получаем контент tcp_serv`ом
-get_content() ->
+get_content(GetKey) ->
      io:format("get_content/0, pid: ~p~n", [self()]),
-     gen_server:call(?SERVER, get_content_sent).
+     gen_server:call(?SERVER, {get_content_sent, GetKey}).
 
 
 %%%===================================================================
@@ -100,7 +100,6 @@ init([]) ->
 %% fileouts -  список туплей
     {ok, FC} = application:get_env(http_mini, fileouts),
     io:format("FileOut = ~p~n", [FC]),
-%% надо взять тупль из списка FC, а потом содержимое файла тупля
     Ral = readlist(FC, []),
     io:format("Ral = ~p~n", [Ral]), 
     {ok, #state{content = Ral}}.
@@ -111,9 +110,9 @@ init([]) ->
 %%     {ok, #state{content = Ral}}.
 
 readlist([], Acc) -> Acc;
-readlist([{_Key, H}|T], Acc) -> 
+readlist([{Key, H}|T], Acc) -> 
     {ok, Readfile} = file:read_file(H),
-    readlist(T, [Readfile|Acc]).
+    readlist(T, [{Key, Readfile}|Acc]).
 
 
 %% readfile(File) ->
@@ -167,14 +166,25 @@ handle_call(get_me_state, _From, State) ->
     CurrNum = State#state.req_processed,
     {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
 
-handle_call(get_content_sent, _From, State) ->
+handle_call({get_content_sent, GetKey}, _From, State) ->
     Fin = State#state.content,
-    io:format("Fin=~p~n", [Fin]),
-    {reply,  Fin,  State};
+    Reply= sorting (Fin, GetKey, 0),
+    io:format("Reply: ~p~n", [Reply]),
+    Reply,
+    {reply,  Reply,  State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
+
+sorting ([], Key, AccPar)  -> 
+     io:format("Keycont == ~p Par = ~p~n", [Key, AccPar]), 
+    AccPar;
+sorting ([{H, Par}|_], Key, _AccPar) when H==Key -> 
+     io:format("Keycont~p => Par~p~n", [Key, Par]),
+     Par;
+sorting ([_H|TListHosts], Key, AccPar) -> 
+     sorting (TListHosts, Key, AccPar).
 
 %%--------------------------------------------------------------------
 %% @private
