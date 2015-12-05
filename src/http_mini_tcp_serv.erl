@@ -286,27 +286,14 @@ request_port() ->
 %% передумала так делать, но пусть пока повисит. 
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
-
-sorting ([], Key, AccPar)  -> 
-     io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
-    AccPar;
-sorting ([{H, _Par}|_], Key, _AccPar) when H=/=Key -> 
+sorting ([], _Key, 0)  -> 
     nothing;
+sorting ([], Key, AccPar)  -> 
+    io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
+    AccPar;
 sorting ([{H, Par}|_], Key, _AccPar) when H==Key -> 
-     io:format("Key~p => Par~p~n", [Key, Par]),
-     Par;
+    io:format("Key~p => Par~p~n", [Key, Par]),
+    Par;
 sorting ([_H|TListHosts], Key, AccPar) -> 
-     sorting (TListHosts, Key, AccPar).
-
-
-%% readfile([], Get, Par) ->
-%%     io:format("=> Par ~p => ~p ~n", [Par, Get]),
-%%     Par;
-%% readfile ([{H, _Par}|[]], Get, _Par) when H=/=Get -> 
-%%     nothing;
-%% readfile ([{H, Par}|_TList], Get, Par) when H==Get -> 
-%%     io:format("Get~p => Par~p~n", [Get, Par]),
-%%     Par;
-%% readfile([_H|TList], Get, Par) -> 
-%%     readfile (TList, Get, Par).
+    sorting (TListHosts, Key, AccPar).
 

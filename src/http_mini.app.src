@@ -19,8 +19,9 @@
                      %% {"/localhost:8888/about.html", "localhost"},
                      %% {"/localhoster:8888/about2.html", "localhoster"}
                      {"localhost","/localhost:8888/about.html"},
-                     {"localhoster", "/localhoster:8888/about2.html"}
-
+                     {"localhoster", "/localhoster:8888/about2.html"},
+                     {"localfisher", "/localfisher:8888/about.html"},
+                     {"midgardr", "/midgardr:8888/about.html"}
                     ]},
 
                    %% {files,
@@ -32,7 +33,8 @@
                    {fileouts,
                     [
                      {"/about.html", "/home/yanki/prj/http_mini/about.html"},
-                     {"/about2.html", "/home/yanki/prj/http_mini/about2.html"}
+                     {"/about2.html", "/home/yanki/prj/http_mini/about2.html"},
+                     {"/about4.html", "/home/yanki/prj/http_mini/about4.html"}
                     ]},
                     {servername, "Yanki'a cool server v.1.1"} 
                   ]},
