@@ -32,9 +32,9 @@
 %%                   {file, "/about.html"},
                    {fileouts,
                     [
-                     {"/about.html", "/home/yanki/prj/http_mini/about.html"},
-                     {"/about2.html", "/home/yanki/prj/http_mini/about2.html"},
-                     {"/about4.html", "/home/yanki/prj/http_mini/about4.html"}
+                     {"/about.html", "/home/yanki/prj/http_mini/www/about.html"},
+                     {"/about2.html", "/home/yanki/prj/http_mini/www/about2.html"},
+                     {"/about4.html", "/home/yanki/prj/http_mini/www/about4.html"}
                     ]},
                     {servername, "Yanki'a cool server v.1.1"} 
                   ]},
