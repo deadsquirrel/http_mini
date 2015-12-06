@@ -189,8 +189,8 @@ responce(thirtyfour, _Resp) ->
 %% на вход пришло Get="/about.html"
 responce(twohundred, GetKey) ->
 %% надо по ключцу получить содержимое рекорда
-    Outfile = gs_content:get_content(GetKey),
-    create_reply_header(Outfile)++Outfile;
+   {Size, Outfile} = gs_content:get_content(GetKey),
+    create_reply_header(Size)++Outfile;
 responce(_, _Resp) ->
     ups.
 
@@ -200,11 +200,14 @@ create_reply_header (Getting) ->
      <<"Server: ">>,    list_to_binary(serverName()),<<"\r\n">>,
      <<"Data: ">>,     list_to_binary(httpd_util:rfc1123_date()),
      <<"\r\n">>, 
+%% content-type должен отдаваться  контент-сервером
      <<"Content-Type: text/html">>, <<"\r\n">>, 
      <<"Content-Length: ">>, 
 %% надо считать содержимое файла, а на фходе у нас ключ!
 %% либо в response формировать ответ, который и приходит сюда 
-     list_to_binary(integer_to_list(byte_size(Getting))),
+%% -- было вычесление длины прямо тут 
+%%     list_to_binary(integer_to_list(byte_size(Getting))),
+     list_to_binary(integer_to_list(Getting)),
      <<"\r\n\r\n">>].
 
  serverName () ->

@@ -112,7 +112,7 @@ init([]) ->
 readlist([], Acc) -> Acc;
 readlist([{Key, H}|T], Acc) -> 
     {ok, Readfile} = file:read_file(H),
-    readlist(T, [{Key, Readfile}|Acc]).
+    readlist(T, [{Key, {byte_size(Readfile), Readfile}}|Acc]).
 
 
 %% readfile(File) ->
