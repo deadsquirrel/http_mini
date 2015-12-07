@@ -131,38 +131,6 @@ readlist([{Key, H}|T], Acc) ->
 
 
 
-%% readfile(File) ->
-%%     case file:read_file (File) of
-%%         {ok, Binary} -> 
-%% %%            io:format("ok1~n", []),
-%%             #state{content = Binary},   
-%%             io:format("ok2~p~n", [Binary]);
-%%         {error, Reason} -> Reason
-%%     end.
-
-%% readfile(File) ->
-%% %%    FCont = 
-%%         case file:open (File, write) of 
-%%             {ok, _Pid} -> 
-%%                 io:format("ok1~n", []),
-%%                 case file:read_file (File) of
-%%                     {ok, Binary} -> 
-%%                         io:format("ok2~n", []),
-%%                         Binary,
-%%                         io:format("ok3~n", []);
-%% %%                        file:close (self()),
-%%                       {error, Reason} -> Reason
-%%                 end;
-            
-%%             {error, Reason} -> Reason
-%%         end,
-%%     case  file:close (self()) of
-%%         ok -> closed;
-%%         {error, R} -> R
-%%     end,
-%%     io:format("ok4~n", []).
-%% %%    {ok, #state{content = FCont}}.
-
 
 %%--------------------------------------------------------------------
 %% @private
@@ -187,7 +155,9 @@ handle_call({get_content_sent, GetKey}, _From, State) ->
     Reply= sorting (Fin, GetKey, 0),
     io:format("Reply: ~p~n", [Reply]),
     Reply,
-    {reply,  Reply,  State};
+    Size= Content_item#content_item,content_size,
+
+    {reply,  Reply_full,  State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

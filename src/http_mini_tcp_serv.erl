@@ -206,8 +206,13 @@ create_reply_header (Getting) ->
 %% надо считать содержимое файла, а на фходе у нас ключ!
 %% либо в response формировать ответ, который и приходит сюда 
 %% -- было вычесление длины прямо тут 
+%% v.1
 %%     list_to_binary(integer_to_list(byte_size(Getting))),
-     list_to_binary(integer_to_list(Getting)),
+%% v.2
+%%     list_to_binary(integer_to_list(Getting)),
+%% читаем длину из рекорда
+
+
      <<"\r\n\r\n">>].
 
  serverName () ->
