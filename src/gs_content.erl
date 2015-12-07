@@ -31,8 +31,8 @@
 
 -record(content_item,
         {
-%%          content_type = <<"text/html">> :: binary(),
           content_key                    :: any (),
+          content_type = <<"text/html">> :: binary(),
           content_size                   :: integer(),
           data = <<>>                    :: binary()
         }).
@@ -101,11 +101,6 @@ get_content(GetKey) ->
 %%--------------------------------------------------------------------
 init([]) ->
     io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
-    %% TS = erlang:localtime(),
-    %% {ok, #state{time_started = TS}}.
-
-%%    {ok, FC} = application:get_env(http_mini, fileouts),
-%% fileouts -  список туплей
     {ok, FC} = application:get_env(http_mini, fileouts),
     io:format("FileOut = ~p~n", [FC]),
     Ral = readlist(FC, []),
@@ -113,21 +108,15 @@ init([]) ->
     {ok, #state{content = Ral}}.
 
 
-%%     {ok, Ral} = file:read_file(FC),
-%%     io:format("Ral = ~p~n", [Ral]), 
-%%     {ok, #state{content = Ral}}.
-
-%% readlist([], Acc) -> Acc;
-%% readlist([{Key, H}|T], Acc) -> 
-%%     {ok, Readfile} = file:read_file(H),
-%%    readlist(T, [{Key, {byte_size(Readfile), Readfile}}|Acc]).
-
 readlist([], Acc) -> Acc;
 readlist([{Key, H}|T], Acc) -> 
     {ok, Readfile} = file:read_file(H),
-    readlist(T, [[{#content_item{content_key=Key,
-                                content_size =byte_size(Readfile),     
-                                data = Readfile}}]|Acc]).
+%% смену типов надо вставить
+    Type=#content_item.content_type,
+    readlist(T, [#content_item{content_key=Key,
+                               content_type = Type, 
+                               content_size =byte_size(Readfile),     
+                               data = Readfile}|Acc]).
 
 
 
@@ -152,12 +141,10 @@ handle_call(get_me_state, _From, State) ->
 
 handle_call({get_content_sent, GetKey}, _From, State) ->
     Fin = State#state.content,
-    Reply= sorting (Fin, GetKey, 0),
+    [Reply]= sorting (Fin, GetKey, []),
     io:format("Reply: ~p~n", [Reply]),
     Reply,
-    Size= Content_item#content_item,content_size,
-
-    {reply,  Reply_full,  State};
+    {reply,  Reply,  State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -166,9 +153,9 @@ handle_call(_Request, _From, State) ->
 sorting ([], Key, AccPar)  -> 
      io:format("Keycont == ~p Par = ~p~n", [Key, AccPar]), 
     AccPar;
-sorting ([{H, Par}|_], Key, _AccPar) when H==Key -> 
-     io:format("Keycont~p => Par~p~n", [Key, Par]),
-     Par;
+sorting ([{content_item, H, Type, Size, Par}|_], Key, AccPar) when H==Key -> 
+    io:format("Keycont~p => Type ~p= Size ~p, Par~p~n", [Key, Type, Size, Par]),
+    [{Size, Type, Par}|AccPar];
 sorting ([_H|TListHosts], Key, AccPar) -> 
      sorting (TListHosts, Key, AccPar).
 

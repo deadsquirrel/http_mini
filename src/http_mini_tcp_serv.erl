@@ -189,19 +189,21 @@ responce(thirtyfour, _Resp) ->
 %% на вход пришло Get="/about.html"
 responce(twohundred, GetKey) ->
 %% надо по ключцу получить содержимое рекорда
-   {Size, Outfile} = gs_content:get_content(GetKey),
-    create_reply_header(Size)++Outfile;
+   {Size, Type, Outfile} = gs_content:get_content(GetKey),
+    create_reply_header(Size, Type)++Outfile;
 responce(_, _Resp) ->
     ups.
 
-create_reply_header (Getting) ->
+create_reply_header (Getting1, Getting2) ->
     [<<"HTTP/1.0 200 OK">>, 
      <<"\r\n">>, 
      <<"Server: ">>,    list_to_binary(serverName()),<<"\r\n">>,
      <<"Data: ">>,     list_to_binary(httpd_util:rfc1123_date()),
      <<"\r\n">>, 
 %% content-type должен отдаваться  контент-сервером
-     <<"Content-Type: text/html">>, <<"\r\n">>, 
+     <<"Content-Type:">>,
+     Getting2,
+     <<"\r\n">>, 
      <<"Content-Length: ">>, 
 %% надо считать содержимое файла, а на фходе у нас ключ!
 %% либо в response формировать ответ, который и приходит сюда 
@@ -209,15 +211,13 @@ create_reply_header (Getting) ->
 %% v.1
 %%     list_to_binary(integer_to_list(byte_size(Getting))),
 %% v.2
-%%     list_to_binary(integer_to_list(Getting)),
 %% читаем длину из рекорда
-
-
+     list_to_binary(integer_to_list(Getting1)),
      <<"\r\n\r\n">>].
 
- serverName () ->
-     {ok, Name} = application:get_env (http_mini, servername),
-     Name.
+serverName () ->
+    {ok, Name} = application:get_env (http_mini, servername),
+    Name.
 
 
 %%    lists:reverse
@@ -300,7 +300,7 @@ sorting ([], Key, AccPar)  ->
     io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
     AccPar;
 sorting ([{H, Par}|_], Key, _AccPar) when H==Key -> 
-    io:format("Key~p => Par~p~n", [Key, Par]),
+    io:format("Key~p => Par ~p~n", [Key, Par]),
     Par;
 sorting ([_H|TListHosts], Key, AccPar) -> 
     sorting (TListHosts, Key, AccPar).
