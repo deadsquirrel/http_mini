@@ -29,12 +29,20 @@
 
 -define(SERVER, ?MODULE).
 
+-record(content_item,
+        {
+%%          content_type = <<"text/html">> :: binary(),
+          content_key                    :: any (),
+          content_size                   :: integer(),
+          data = <<>>                    :: binary()
+        }).
+
 -record(state,
         {
 %%          time_started :: calendar:datetime(),
           req_processed = 0 :: integer(),
 %%          contentfile :: any (),
-          content :: any ()
+          content :: [ #content_item{} ]
         }).
 
 %%%===================================================================
@@ -109,10 +117,18 @@ init([]) ->
 %%     io:format("Ral = ~p~n", [Ral]), 
 %%     {ok, #state{content = Ral}}.
 
+%% readlist([], Acc) -> Acc;
+%% readlist([{Key, H}|T], Acc) -> 
+%%     {ok, Readfile} = file:read_file(H),
+%%    readlist(T, [{Key, {byte_size(Readfile), Readfile}}|Acc]).
+
 readlist([], Acc) -> Acc;
 readlist([{Key, H}|T], Acc) -> 
     {ok, Readfile} = file:read_file(H),
-    readlist(T, [{Key, {byte_size(Readfile), Readfile}}|Acc]).
+    readlist(T, [[{#content_item{content_key=Key,
+                                content_size =byte_size(Readfile),     
+                                data = Readfile}}]|Acc]).
+
 
 
 %% readfile(File) ->
