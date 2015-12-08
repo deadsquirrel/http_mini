@@ -34,7 +34,8 @@
                     [
                      {"/about.html", "/home/yanki/prj/http_mini/www/about.html"},
                      {"/about2.html", "/home/yanki/prj/http_mini/www/about2.html"},
-                     {"/about4.html", "/home/yanki/prj/http_mini/www/about4.html"}
+                     {"/about4.html", "/home/yanki/prj/http_mini/www/about4.html"},
+                     {"/yep.jpg", "/home/yanki/prj/http_mini/www/yep.jpg"}
                     ]},
                     {servername, "Yanki'a cool server v.1.1"} 
                   ]},
