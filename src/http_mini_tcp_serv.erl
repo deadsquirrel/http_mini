@@ -190,6 +190,7 @@ responce(thirtyfour, _Resp) ->
 responce(twohundred, GetKey) ->
 %% надо по ключцу получить содержимое рекорда
    {Size, Type, Outfile} = gs_content:get_content(GetKey),
+    io:format ("Size=~p, Type: ~p~n", [Size, Type]),
     create_reply_header(Size, Type)++Outfile;
 responce(_, _Resp) ->
     ups.

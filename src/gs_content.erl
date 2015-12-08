@@ -39,9 +39,7 @@
 
 -record(state,
         {
-%%          time_started :: calendar:datetime(),
           req_processed = 0 :: integer(),
-%%          contentfile :: any (),
           content :: [ #content_item{} ]
         }).
 
@@ -112,13 +110,21 @@ readlist([], Acc) -> Acc;
 readlist([{Key, H}|T], Acc) -> 
     {ok, Readfile} = file:read_file(H),
 %% смену типов надо вставить
-    Type=#content_item.content_type,
-    readlist(T, [#content_item{content_key=Key,
+    %%    Type = #state.content#content_item.content_type,
+    [Type] = get_type(Key, []),
+  readlist(T, [#content_item{content_key=Key,
                                content_type = Type, 
                                content_size =byte_size(Readfile),     
                                data = Readfile}|Acc]).
 
-
+%% получаем тип передаваемого файла
+get_type([], Tail) -> Tail;
+get_type([H|T], Tail) when H == 46 ->
+    [T|Tail];
+get_type([_H|T], Tail) ->
+    get_type(T, Tail).
+    
+    
 
 
 %%--------------------------------------------------------------------
