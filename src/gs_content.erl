@@ -111,16 +111,31 @@ readlist([{Key, H}|T], Acc) ->
     {ok, Readfile} = file:read_file(H),
 %% смену типов надо вставить
     %%    Type = #state.content#content_item.content_type,
-    [Type] = get_type(Key, []),
+    Type = get_type(Key, []),
   readlist(T, [#content_item{content_key=Key,
                                content_type = Type, 
                                content_size =byte_size(Readfile),     
                                data = Readfile}|Acc]).
 
 %% получаем тип передаваемого файла
-get_type([], Tail) -> Tail;
+%% проверяем его
+get_type([], _Tail) -> 
+    "unknowntype";
 get_type([H|T], Tail) when H == 46 ->
-    [T|Tail];
+    case [T|Tail] of
+        ["html"] -> "text/html";
+        ["htm"] -> "text/html";
+        ["css"] -> "text/css";
+        ["txt"] -> "text/plain";
+        ["jpg"] -> "image/jpeg";
+        ["jpeg"] -> "image/jpeg";
+        ["jpe"] -> "image/jpeg";
+        ["gif"] -> "image/gif";
+        ["tgz"] -> "application/x-compressed";
+        ["mov"] -> "video/quicktime";
+        ["mpg"] -> "video/mpeg";
+        [_] -> "unknowntype"
+    end;
 get_type([_H|T], Tail) ->
     get_type(T, Tail).
     
