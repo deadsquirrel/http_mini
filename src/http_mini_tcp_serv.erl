@@ -72,20 +72,20 @@ wait_conn(LSock) ->
 
 go_recv (Sock) ->
     case gen_tcp:recv(Sock, 0) of
-        {ok, Zapros} ->
+        {ok, Request} ->
 %% not sure --------------
 %%            receive_data(Sock, []),
 %% end of not sure --------
-            Stroka = binary_to_list(Zapros),
-            io:format("Stroka = ~p~n", [Stroka]),
-            io:format("Zapros = ~p~n", [Zapros]),
-            [H|_T] = string:tokens(Stroka, " "),
+            String = binary_to_list(Request),
+            io:format("String = ~p~n", [String]),
+            io:format("Request = ~p~n", [Request]),
+            [H|_T] = string:tokens(String, " "),
 %%            io:format("Head = ~p~n", [H]),
 %%            io:format("Tail = ~p~n", [T]),
             Proplist = 
                 if H == "GET" ->
 %% может запустить тут процесс
-                        parsing(Stroka);
+                        parsing(String);
                         %% Pid = spawn (http_mini_tcp_serv, parsing, [Stroka] ),
                         %% io:format("Parsing Pid=~p~n", [Pid]);
                    true -> xpenb
@@ -176,7 +176,8 @@ go_recv (Sock) ->
             go_recv(Sock);
         
         _Oth ->
-            %% здесь Reply еще не известна, надо объявить где-то еще, или написать вручную. пока что
+            %% здесь Reply еще не известна, надо объявить где-то еще,
+            %% или написать вручную. пока что
             %%            gen_tcp:send (Sock, Reply),
             gen_tcp:send (Sock, <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>),
             gen_tcp:close(Sock)
@@ -195,7 +196,7 @@ responce(twohundred, GetKey) ->
 responce(_, _Resp) ->
     ups.
 
-create_reply_header (Getting1, Getting2) ->
+create_reply_header (Gets_size, Gets_type) ->
     [<<"HTTP/1.0 200 OK">>, 
      <<"\r\n">>, 
      <<"Server: ">>,    list_to_binary(serverName()),<<"\r\n">>,
@@ -203,7 +204,7 @@ create_reply_header (Getting1, Getting2) ->
      <<"\r\n">>, 
 %% content-type должен отдаваться  контент-сервером
      <<"Content-Type:">>,
-     Getting2,
+     Gets_type,
      <<"\r\n">>, 
      <<"Content-Length: ">>, 
 %% надо считать содержимое файла, а на фходе у нас ключ!
@@ -213,7 +214,7 @@ create_reply_header (Getting1, Getting2) ->
 %%     list_to_binary(integer_to_list(byte_size(Getting))),
 %% v.2
 %% читаем длину из рекорда
-     list_to_binary(integer_to_list(Getting1)),
+     list_to_binary(integer_to_list(Gets_size)),
      <<"\r\n\r\n">>].
 
 serverName () ->

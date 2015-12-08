@@ -171,6 +171,7 @@ handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+%%--------------------------------------------------------------------
 sorting ([], Key, AccPar)  -> 
      io:format("Keycont == ~p Par = ~p~n", [Key, AccPar]), 
     AccPar;
