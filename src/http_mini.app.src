@@ -5,6 +5,7 @@
    {modules,      [
                    gs_config,
                    gs_content,
+                   gs_logger,
                    http_mini_tcp_serv,          
                    http_mini_app,
                    http_mini_sup
@@ -37,7 +38,11 @@
                      {"/about4.html", "/home/yanki/prj/http_mini/www/about4.html"},
                      {"/yep.jpg", "/home/yanki/prj/http_mini/www/yep.jpg"}
                     ]},
-                    {servername, "Yanki'a cool server v.1.1"} 
+                   {servername, "Yanki'a cool server v.1.1"},
+                   {logfile, "log/http,log" }
+                   %%                   {file, "/about.html"},
+                   
+                   
                   ]},
    {mod,          {http_mini_app, []}}
                   ]}.

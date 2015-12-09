@@ -22,6 +22,7 @@ $(PACKAGE): src/gs_config.erl src/$(PACKAGE)_app.erl src/$(PACKAGE)_sup.erl
 	erlc -o ebin src/$(PACKAGE)_sup.erl
 	erlc -o ebin src/gs_config.erl
 	erlc -o ebin src/gs_content.erl
+	erlc -o ebin src/gs_logger.erl
 	erlc -o ebin src/$(PACKAGE)_tcp_serv.erl
 
 shell: all
