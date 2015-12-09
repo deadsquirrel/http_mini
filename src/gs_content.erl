@@ -100,9 +100,9 @@ get_content(GetKey) ->
 init([]) ->
     io:format("http_mini_content gen_server init fun (pid ~p)~n", [self()]),
     {ok, FC} = application:get_env(http_mini, fileouts),
-    io:format("FileOut = ~p~n", [FC]),
+%%    io:format("FileOut = ~p~n", [FC]),
     Ral = readlist(FC, []),
-    io:format("Ral = ~p~n", [Ral]), 
+%%    io:format("Ral = ~p~n", [Ral]), 
     {ok, #state{content = Ral}}.
 
 
@@ -163,7 +163,7 @@ handle_call(get_me_state, _From, State) ->
 handle_call({get_content_sent, GetKey}, _From, State) ->
     Fin = State#state.content,
     [Reply]= sorting (Fin, GetKey, []),
-    io:format("Reply: ~p~n", [Reply]),
+%%    io:format("Reply: ~p~n", [Reply]),
     Reply,
     {reply,  Reply,  State};
 
@@ -172,11 +172,11 @@ handle_call(_Request, _From, State) ->
     {reply, Reply, State}.
 
 %%--------------------------------------------------------------------
-sorting ([], Key, AccPar)  -> 
-     io:format("Keycont == ~p Par = ~p~n", [Key, AccPar]), 
+sorting ([], _Key, AccPar)  -> 
+%%     io:format("Keycont == ~p Par = ~p~n", [Key, AccPar]), 
     AccPar;
 sorting ([{content_item, H, Type, Size, Par}|_], Key, AccPar) when H==Key -> 
-    io:format("Keycont~p => Type ~p= Size ~p, Par~p~n", [Key, Type, Size, Par]),
+%%    io:format("Keycont~p => Type ~p= Size ~p, Par~p~n", [Key, Type, Size, Par]),
     [{Size, Type, Par}|AccPar];
 sorting ([_H|TListHosts], Key, AccPar) -> 
      sorting (TListHosts, Key, AccPar).
