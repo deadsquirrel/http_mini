@@ -76,6 +76,7 @@ go_recv (Sock) ->
 %% not sure --------------
 %%            receive_data(Sock, []),
 %% end of not sure --------
+%%            gs_logger:yanki(Request),
             String = binary_to_list(Request),
             io:format("String = ~p~n", [String]),
             io:format("Request = ~p~n", [Request]),
@@ -148,7 +149,7 @@ go_recv (Sock) ->
                             Filesout,
                             case sorting (Filesout, Get, 0) of
                                 nothing -> 
-                                    gen_tcp:send (Sock, responce(fortyfour, gg)),
+                                    gen_tcp:send (Sock, responce(fortyfour, ups)),
                                     gen_tcp:close(Sock);
                                 
                                 Param2 -> 
@@ -183,13 +184,15 @@ go_recv (Sock) ->
             gen_tcp:close(Sock)
     end.
 
-responce(fortyfour, _Resp) ->
-    <<"HTTP/1.x 404 Not found\r\nServer: localhost\r\n\r\n<html><head></head><body>404 File not found</body></html>\r\n">>; 
+responce(fortyfour, GetKey) ->
+   {Size, Type, Outfile} = gs_content:get_content(GetKey),
+    io:format ("Size=~p, Type: ~p~n", [Size, Type]),
+    create_reply_header(Size, Type)++Outfile;
 responce(thirtyfour, _Resp) ->
 <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>;
 %% на вход пришло Get="/about.html"
 responce(twohundred, GetKey) ->
-%% надо по ключцу получить содержимое рекорда
+%% надо по ключу получить содержимое рекорда
    {Size, Type, Outfile} = gs_content:get_content(GetKey),
     io:format ("Size=~p, Type: ~p~n", [Size, Type]),
     create_reply_header(Size, Type)++Outfile;
