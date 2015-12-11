@@ -195,6 +195,7 @@ responce(twohundred, GetKey) ->
 %% надо по ключу получить содержимое рекорда
    {Size, Type, Outfile} = gs_content:get_content(GetKey),
     io:format ("Size=~p, Type: ~p~n", [Size, Type]),
+    gs_logger:yanki("ok 200"),
     create_reply_header(Size, Type)++Outfile;
 responce(_, _Resp) ->
     ups.

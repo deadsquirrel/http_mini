@@ -18,7 +18,8 @@
 %% API
 -export([
          start_link/0,
-         get_state/0
+         get_state/0,
+         yanki/1
         ]).
 
 %% gen_server callbacks
@@ -60,10 +61,14 @@ get_state() ->
     gen_server:call(?SERVER, get_me_state).
 %% ===================================================================
 %%--------------------------------------------------------------------
-%% @doc just a demo version
+%% @doc write in log-file
 %% @end
 %%--------------------------------------------------------------------
-yanki(4to-to) ->
+yanki(String) ->
+     io:format(" written pid: ~p~n", [self()]),
+     gen_server:call(?SERVER, {write_log, String}).
+
+
 
 %% ===================================================================
 %%% gen_server callbacks
@@ -100,18 +105,16 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call(get_me_state, _From, State) ->
-    CurrNum = State#state.req_processed,
-    {reply, {takeit, State}, State#state{req_processed = CurrNum +1}};
-
-%% handle_call(request_port, _From, State) ->
-%%     Port_conn = State#state.port_connect,
-%%     {reply, Port_conn, State};
-    
+handle_call(write_log, _From, _State) ->
+    {ok, S} = file:open("/log/test.log", write),
+    io:format(S, "\~s~n", ["text"]),
+%    io:format(S, "\~p~s~n", [String],
+              Reply= file:close(S),
+              {reply, Reply, _State};
+                  
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
-
 
 
 
