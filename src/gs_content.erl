@@ -119,6 +119,7 @@ readlist([{Key, H}|T], Acc) ->
 
 %% получаем тип передаваемого файла
 %% проверяем его
+get_type(ups, _) -> "notype";
 get_type([], _Tail) -> 
     "unknowntype";
 get_type([H|T], Tail) when H == 46 ->
