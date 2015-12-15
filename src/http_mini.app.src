@@ -41,7 +41,7 @@
                      {ups, "/home/yanki/prj/http_mini/www/404.html"}
                     ]},
                    {servername, "Yanki'a cool server v.1.1"},
-                   {logfile, "log/http,log" }
+                   {logfile, "log/test.log" }
                    %%                   {file, "/about.html"},
                    
                    

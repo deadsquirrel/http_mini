@@ -30,8 +30,8 @@
 
 -record(state,
         {
-          req_processed = 0 :: integer (),
-          port_connect :: integer ()
+          port_connect :: integer (),
+          logfile :: any ()
         }).
 
 
@@ -87,8 +87,12 @@ yanki(String) ->
 %%--------------------------------------------------------------------
 init([]) ->
     io:format("http_mini_config gen_server init fun (pid ~p)~n", [self()]),
-    PC = application:get_env (http_mini, port),
-    {ok, #state{port_connect = PC}}.
+    %% PC = application:get_env (http_mini, port),
+    %% {ok, #state{port_connect = PC}},
+
+    LogFile = application:get_env(http_mini, logfile),
+    io:format("LogFile =  ~p~n", [LogFile]),
+    {ok, #state{logfile = LogFile}}.
 
 
 %%--------------------------------------------------------------------
@@ -105,12 +109,13 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call(write_log, _From, _State) ->
-    {ok, S} = file:open("/log/test.log", write),
-    io:format(S, "\~s~n", ["text"]),
+handle_call({write_log, String}, _From, State) ->
+    OpenFile = State#state.logfile,
+    {ok, S} = file:open(OpenFile, write),
+    io:format(S, "\~s~n", [String]),
 %    io:format(S, "\~p~s~n", [String],
               Reply= file:close(S),
-              {reply, Reply, _State};
+              {reply, Reply, State};
                   
 handle_call(_Request, _From, State) ->
     Reply = ok,
