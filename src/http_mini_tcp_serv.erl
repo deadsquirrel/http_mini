@@ -130,6 +130,7 @@ go_recv (Sock) ->
             Get,
             Host2,
             Port2,
+            UserAgent = proplists:get_value(useragent, Proplist),
 %% ----------------------------------------------------------------------------
 %% сравниваем HFPJ,HFNM!
 %% ----------------------------------------------------------------------------
@@ -142,7 +143,7 @@ go_recv (Sock) ->
                     %% найти соответствие
                     case sorting (ListHosts, Host2, 0) of
                         nothing ->
-                            gen_tcp:send (Sock,responce(thirtyfour, Get, nothing)),
+                            gen_tcp:send (Sock,responce(thirtyfour, Get, nothing, UserAgent)),
                             gen_tcp:close(Sock);
                         Param ->
                                     io:format("Param >>  ~p~n", [Param]), 
@@ -151,7 +152,7 @@ go_recv (Sock) ->
                             Filesout,
                             case sorting (Filesout, Get, 0) of
                                 nothing -> 
-                                    gen_tcp:send (Sock, responce(fortyfour, ups, nothing)),
+                                    gen_tcp:send (Sock, responce(fortyfour, ups, nothing, UserAgent)),
                                     gen_tcp:close(Sock);
                                 
                                 Param2 -> 
@@ -160,7 +161,7 @@ go_recv (Sock) ->
 %%  Param2 - url для передачи в лог-файл
 %% ----------------------------------------------------------------------------
 
-                                    gen_tcp:send (Sock,responce(twohundred, Get, Param)),
+                                    gen_tcp:send (Sock,responce(twohundred, Get, Param, UserAgent)),
                                     gen_tcp:close(Sock)
                             end
                     end;
@@ -177,7 +178,7 @@ go_recv (Sock) ->
 %%                                        gen_tcp:close(Sock)
 %%                     end;
                 true  ->
-                    gen_tcp:send (Sock,responce(thirtyfour, nothing, nothing)),
+                    gen_tcp:send (Sock,responce(thirtyfour, nothing, nothing, UserAgent)),
                     gen_tcp:close(Sock)
             end,
             go_recv(Sock);
@@ -190,33 +191,35 @@ go_recv (Sock) ->
             gen_tcp:close(Sock)
     end.
 
-responce(fortyfour, GetKey, Url) ->
+responce(fortyfour, GetKey, Url, UserAgent) ->
     {Size, Type, Outfile} = gs_content:get_content(GetKey),
     io:format ("Size=~p, Type: ~p~n", [Size, Type]),
     LocalDate = httpd_util:rfc1123_date(),
-    U = to_log(LocalDate, Url),
+    U = to_log(LocalDate, Url, UserAgent),
     gs_logger:writer(U),
     create_reply_header(Size, Type, LocalDate)++Outfile;
-responce(thirtyfour, _Resp, _Url) ->
+responce(thirtyfour, _Resp, _Url, _UserAgent) ->
     <<"HTTP/1.x 434 Requested host unavailable\r\nServer: Yankizaur/0.1.1\r\n\r\n<html><head></head><body>host not available</body></html>\r\n">>;
 %% на вход пришло Get="/about.html"
-responce(twohundred, GetKey, Url) ->
+responce(twohundred, GetKey, Url, UserAgent) ->
     %% надо по ключу получить содержимое рекорда
    {Size, Type, Outfile} = gs_content:get_content(GetKey),
     io:format ("Size=~p, Type: ~p~n", [Size, Type]),
     LocalDate = httpd_util:rfc1123_date(),
-    U = list_to_binary(to_log(LocalDate, Url)),
+    U = list_to_binary(to_log(LocalDate, Url, UserAgent)),
     gs_logger:writer(U),
     create_reply_header(Size, Type, LocalDate)++Outfile;
-responce(_, _Resp, _Url) ->
+responce(_, _Resp, _Url, _UserAgent) ->
     ups.
 
 
-to_log(LocalDate, Url) ->
-    [LocalDate,
-     " GET",
+to_log(LocalDate, Url, UserAgent) ->
+    ["[", LocalDate,
+     "] GET",
      Url,
-     " 200"].
+     " 200 ",
+     UserAgent,
+     "\r\n"].
 
 create_reply_header (Gets_size, Gets_type, LocalDate) ->
     [<<"HTTP/1.0 200 OK">>, 

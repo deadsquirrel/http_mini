@@ -110,9 +110,10 @@ handle_call({write_log, String}, _From, State) ->
     OpenFile = State#state.logfile,
     {ok, S} = file:open(OpenFile, write),
     io:format(S, "\~p\~n", [String]),
-              Reply= file:close(S),
-              {reply, Reply, State};
-                  
+%%    file:position(S, eof),
+    Reply= file:close(S),
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
