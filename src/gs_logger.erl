@@ -65,11 +65,9 @@ get_state() ->
 %% @end
 %%--------------------------------------------------------------------
 writer(String) ->
-     io:format(" written pid: ~p~n", [self()]),
-     io:format(" writer_String:: ~p~n", [String]),
-     gen_server:call(?SERVER, {write_log, String}).
-
-
+    io:format(" written pid: ~p~n", [self()]),
+    io:format(" writer_String:: ~p~n", [String]),
+    gen_server:call(?SERVER, {write_log, String}).
 
 %% ===================================================================
 %%% gen_server callbacks

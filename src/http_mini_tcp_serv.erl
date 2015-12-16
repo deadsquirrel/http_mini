@@ -205,7 +205,7 @@ responce(twohundred, GetKey, Url) ->
    {Size, Type, Outfile} = gs_content:get_content(GetKey),
     io:format ("Size=~p, Type: ~p~n", [Size, Type]),
     LocalDate = httpd_util:rfc1123_date(),
-    U = to_log(LocalDate, Url),
+    U = list_to_binary(to_log(LocalDate, Url)),
     gs_logger:writer(U),
     create_reply_header(Size, Type, LocalDate)++Outfile;
 responce(_, _Resp, _Url) ->
@@ -214,9 +214,9 @@ responce(_, _Resp, _Url) ->
 
 to_log(LocalDate, Url) ->
     [LocalDate,
-     <<"GET">>,
+     " GET",
      Url,
-     <<"200">>].
+     " 200"].
 
 create_reply_header (Gets_size, Gets_type, LocalDate) ->
     [<<"HTTP/1.0 200 OK">>, 
