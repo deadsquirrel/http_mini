@@ -108,7 +108,7 @@ init([]) ->
 handle_call({write_log, String}, _From, State) ->
     io:format("String::: ~p~n", [String]),
     OpenFile = State#state.logfile,
-    {ok, S} = file:open(OpenFile, write),
+    {ok, S} = file:open(OpenFile, [append]),
     io:format(S, "\~p\~n", [String]),
 %%    file:position(S, eof),
     Reply= file:close(S),
