@@ -3,3 +3,4 @@
 *.dump
 ebin
 notes.org
+/log

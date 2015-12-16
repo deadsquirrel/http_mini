@@ -87,10 +87,7 @@ yanki(String) ->
 %%--------------------------------------------------------------------
 init([]) ->
     io:format("http_mini_config gen_server init fun (pid ~p)~n", [self()]),
-    %% PC = application:get_env (http_mini, port),
-    %% {ok, #state{port_connect = PC}},
-
-    LogFile = application:get_env(http_mini, logfile),
+    {ok, LogFile} = application:get_env(http_mini, logfile),
     io:format("LogFile =  ~p~n", [LogFile]),
     {ok, #state{logfile = LogFile}}.
 
@@ -112,8 +109,7 @@ init([]) ->
 handle_call({write_log, String}, _From, State) ->
     OpenFile = State#state.logfile,
     {ok, S} = file:open(OpenFile, write),
-    io:format(S, "\~s~n", [String]),
-%    io:format(S, "\~p~s~n", [String],
+    io:format(S, "\~p\~n", [String]),
               Reply= file:close(S),
               {reply, Reply, State};
                   
@@ -121,7 +117,15 @@ handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
-
+%% {ok, S} = file:open("test2.dat", write).
+%% {ok,<0.62.0>}
+%% 2> io:format(S, "\~s\~n", ["Hello readers"]).
+%% ok
+%% 3> io:format(S, "\~w\~n", [123]).
+%% ok
+%% 4> io:format(S, "\~s\~n", ["that's it"]).
+%% ok
+%% 5> file:close(S).
 
 
 
