@@ -19,7 +19,7 @@
 -export([
          start_link/0,
          get_state/0,
-         yanki/1
+         writer/1
         ]).
 
 %% gen_server callbacks
@@ -64,8 +64,9 @@ get_state() ->
 %% @doc write in log-file
 %% @end
 %%--------------------------------------------------------------------
-yanki(String) ->
+writer(String) ->
      io:format(" written pid: ~p~n", [self()]),
+     io:format(" writer_String:: ~p~n", [String]),
      gen_server:call(?SERVER, {write_log, String}).
 
 
@@ -107,6 +108,7 @@ init([]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({write_log, String}, _From, State) ->
+    io:format("String::: ~p~n", [String]),
     OpenFile = State#state.logfile,
     {ok, S} = file:open(OpenFile, write),
     io:format(S, "\~p\~n", [String]),
