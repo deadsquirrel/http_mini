@@ -22,7 +22,8 @@
                      {"localhost","/localhost:8888/about.html"},
                      {"localhoster", "/localhoster:8888/about2.html"},
                      {"localfisher", "/localfisher:8888/about.html"},
-                     {"midgardr", "/midgardr:8888/about.html"}
+                     {"midgardr", "/midgardr:8888/about.html"},
+                     {"oldsite", "/midgardr:8888/about.html"}
                     ]},
 
                    %% {files,
@@ -39,6 +40,7 @@
                      {"/yep.jpg", "/home/yanki/prj/http_mini/www/yep.jpg"},
                      {"/404.png", "/home/yanki/prj/http_mini/www/404.png"},
                      {ups, "/home/yanki/prj/http_mini/www/404.html"}
+%%                     {redirect, "/home/yanki/prj/http_mini/www/about.html"}
                     ]},
                    {servername, "Yanki'a cool server v.1.1"},
                    {logfile, "log/test.log" }

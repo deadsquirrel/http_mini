@@ -141,22 +141,24 @@ go_recv (Sock) ->
 
                     %% Есть список адресов в кей-валюе структуре
                     %% найти соответствие
-                    case sorting (ListHosts, Host2, 0) of
+                    %% делаем перенаправление. либо тут вызываем обработку файла дальше и отдаем 200 ок
+                    case sorting (ListHosts, Host2) of
                         nothing ->
                             gen_tcp:send (Sock,responce(thirtyfour, Get, nothing, UserAgent)),
                             gen_tcp:close(Sock);
                         Param ->
-                                    io:format("Param >>  ~p~n", [Param]), 
-                        {ok, Filesout} = application:get_env (http_mini, fileouts),
+                            io:format("Param >>  ~p~n", [Param]), 
+                            {ok, Filesout} = application:get_env (http_mini, fileouts),
                             io:format("Filesout  ~p~n Get=~p~n", [Filesout, Get]), 
                             Filesout,
-                            case sorting (Filesout, Get, 0) of
+                            case sorting (Filesout, Get) of
                                 nothing -> 
                                     gen_tcp:send (Sock, responce(fortyfour, ups, nothing, UserAgent)),
                                     gen_tcp:close(Sock);
                                 
                                 Param2 -> 
-                                    io:format("Param2 >>  ~p~n", [Param2]), 
+                                    io:format("Param2 >>  ~p~n", [Param2]),        
+                       
 %% ----------------------------------------------------------------------------
 %%  Param2 - url для передачи в лог-файл
 %% ----------------------------------------------------------------------------
@@ -165,12 +167,12 @@ go_recv (Sock) ->
                                     gen_tcp:close(Sock)
                             end
                     end;
- %%                     case application:get_key(Host2) of 
- %%                         undefined -> 
- %%                             io:format("Ups. no host  ~p~n", [Host2]), 
+                %%                     case application:get_key(Host2) of 
+%%                         undefined -> 
+%%                             io:format("Ups. no host  ~p~n", [Host2]), 
 %% %%% Outfile тожу пока список, но попробуем отдаьт его пока так.
- %% %%% Поправить!!
- %%                             gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
+%% %%% Поправить!!
+%%                             gen_tcp:send (Sock,responce(thirtyfour, Outfile)),
 %%                             gen_tcp:close(Sock);
 %%                         {ok, Val}   -> Val,
 %%                                        io:format("Val = ~p~n", [Val]), 
@@ -209,6 +211,7 @@ responce(twohundred, GetKey, Url, UserAgent) ->
     U = list_to_binary(to_log(LocalDate, Url, UserAgent)),
     gs_logger:writer(U),
     create_reply_header(Size, Type, LocalDate)++Outfile;
+%%responce(threehuntwo, GetKey, Url, UserAgent) ->
 responce(_, _Resp, _Url, _UserAgent) ->
     ups.
 
@@ -321,14 +324,16 @@ request_port() ->
 %% передумала так делать, но пусть пока повисит. 
 %% readhost ([{_Host2, Path}|T]) -> Path,
 %%                                 readhost (T).
-sorting ([], _Key, 0)  -> 
+sorting ([], _Key)  -> 
     nothing;
-sorting ([], Key, AccPar)  -> 
-    io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
-    AccPar;
-sorting ([{H, Par}|_], Key, _AccPar) when H==Key -> 
+%% sorting ([], Key, AccPar)  -> 
+%%     io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
+%%     AccPar;
+sorting ([{_H, Par}|_], Key) when Key == "oldsite"  -> 
+    Par;
+sorting ([{H, Par}|_], Key) when H==Key -> 
     io:format("Key~p => Par ~p~n", [Key, Par]),
     Par;
-sorting ([_H|TListHosts], Key, AccPar) -> 
-    sorting (TListHosts, Key, AccPar).
+sorting ([_H|TListHosts], Key) -> 
+    sorting (TListHosts, Key).
 
