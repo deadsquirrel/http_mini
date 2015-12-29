@@ -146,9 +146,25 @@ go_recv (Sock) ->
                         nothing ->
                             gen_tcp:send (Sock,responce(thirtyfour, Get, nothing, UserAgent)),
                             gen_tcp:close(Sock);
-                        redirect ->
-                            gen_tcp:send (Sock,responce(thirtyfour, Get, redirect302, UserAgent)),
-                            gen_tcp:close(Sock);
+%% кажется это полная фигня. просто ищем по другому ключу и все прописано в конфиге
+                      %%   {redirect, Param302} ->
+%% %% если хост2 иной, но существующий, пересылаем на главную и смотрим, что именно 
+%% %% запрашивает пользователь - отдаем ему запрашиваемый файл, если он есть
+%%                             io:format("Param302 >>  ~p~n", [Param302]), 
+%%                             {ok, Filesout} = application:get_env (http_mini, fileouts),
+%%                             io:format("Filesout  ~p~n Get=~p~n", [Filesout, Get]), 
+%%                             Filesout,
+%%                             case sorting (Filesout, Get) of
+%%                                 nothing -> 
+%%                                     gen_tcp:send (Sock, responce(fortyfour, ups, nothing, UserAgent)),
+%%                                     gen_tcp:close(Sock);
+                                
+%%                                 Param2 -> 
+%%                                     io:format("Param2 >>  ~p~n", [Param2]),     
+%% %% редирект 302 на главную
+%%                                     gen_tcp:send (Sock,responce(thirtyhuntwo, Get, Param302, UserAgent)),
+%%                                     gen_tcp:close(Sock)
+%%                                         end;
                         Param ->
                             io:format("Param >>  ~p~n", [Param]), 
                             {ok, Filesout} = application:get_env (http_mini, fileouts),
@@ -214,7 +230,15 @@ responce(twohundred, GetKey, Url, UserAgent) ->
     U = list_to_binary(to_log(LocalDate, Url, UserAgent)),
     gs_logger:writer(U),
     create_reply_header(Size, Type, LocalDate)++Outfile;
-%%responce(threehuntwo, GetKey, Url, UserAgent) ->
+
+%% responce(thirtyhuntwo, GetKey, Url, UserAgent) ->
+%%    {Size, Type, Outfile} = gs_content:get_content(GetKey),
+%%     io:format ("Size=~p, Type: ~p~n", [Size, Type]),
+%%     LocalDate = httpd_util:rfc1123_date(),
+%%     U = list_to_binary(to_log(LocalDate, Url, UserAgent)),
+%%     gs_logger:writer(U),
+%%     create_reply_header(Size, Type, LocalDate)++Outfile;
+
 responce(_, _Resp, _Url, _UserAgent) ->
     ups.
 
@@ -332,8 +356,9 @@ sorting ([], _Key)  ->
 %% sorting ([], Key, AccPar)  -> 
 %%     io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
 %%     AccPar;
-sorting ([{_H, _Par}|_], Key) when Key == "oldsite"  -> 
-    redirect;
+%% sorting ([{H, Par}|_], Key) when Key == "oldsite"  -> 
+%%     io:format("Key~p 0000 => Par ~p~n", [Key, Par]),
+%%     {redirect, Par};
 sorting ([{H, Par}|_], Key) when H==Key -> 
     io:format("Key~p => Par ~p~n", [Key, Par]),
     Par;
