@@ -39,8 +39,8 @@
                      {"/about4.html", "/home/yanki/prj/http_mini/www/about4.html"},
                      {"/yep.jpg", "/home/yanki/prj/http_mini/www/yep.jpg"},
                      {"/404.png", "/home/yanki/prj/http_mini/www/404.png"},
-                     {ups, "/home/yanki/prj/http_mini/www/404.html"}
-%%                     {redirect, "/home/yanki/prj/http_mini/www/about.html"}
+                     {ups, "/home/yanki/prj/http_mini/www/404.html"},
+                     {redirect302, "/home/yanki/prj/http_mini/www/about.html"}
                     ]},
                    {servername, "Yanki'a cool server v.1.1"},
                    {logfile, "log/test.log" }

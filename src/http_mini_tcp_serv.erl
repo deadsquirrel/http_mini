@@ -146,6 +146,9 @@ go_recv (Sock) ->
                         nothing ->
                             gen_tcp:send (Sock,responce(thirtyfour, Get, nothing, UserAgent)),
                             gen_tcp:close(Sock);
+                        redirect ->
+                            gen_tcp:send (Sock,responce(thirtyfour, Get, redirect302, UserAgent)),
+                            gen_tcp:close(Sock);
                         Param ->
                             io:format("Param >>  ~p~n", [Param]), 
                             {ok, Filesout} = application:get_env (http_mini, fileouts),
@@ -329,8 +332,8 @@ sorting ([], _Key)  ->
 %% sorting ([], Key, AccPar)  -> 
 %%     io:format("Key == ~p Par = ~p~n", [Key, AccPar]), 
 %%     AccPar;
-sorting ([{_H, Par}|_], Key) when Key == "oldsite"  -> 
-    Par;
+sorting ([{_H, _Par}|_], Key) when Key == "oldsite"  -> 
+    redirect;
 sorting ([{H, Par}|_], Key) when H==Key -> 
     io:format("Key~p => Par ~p~n", [Key, Par]),
     Par;
